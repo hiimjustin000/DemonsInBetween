@@ -5,6 +5,10 @@ A mod that adds additional demon difficulties in between existing ones.
 - Adds 15 new demon difficulties in between the 5 existing ones
 - These difficulties are determined using the [Geometry Dash Demon Ladder](https://gdladder.com).
 
+# Credits
+- Krintop - Designer of the mod logo and textures
+- hiimjustin000 - Creator of the mod
+
 # Difficulties
 - Free Demon (Tier 1)
 - Peaceful Demon (Tier 2)
