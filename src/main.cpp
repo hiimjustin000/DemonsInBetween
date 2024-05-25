@@ -58,41 +58,6 @@ class $modify(DIBMenuLayer, MenuLayer) {
 
 #include <Geode/modify/LevelInfoLayer.hpp>
 class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
-    CCPoint getPositionForIndex(int index) {
-        auto y = 0.0f;
-
-        switch (index) {
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-            case 7:
-                y = -5.0f;
-                break;
-            case 8:
-            case 9:
-            case 10:
-            case 11:
-            case 12:
-            case 13:
-            case 14:
-            case 15:
-                y = -4.25f;
-                break;
-            case 16:
-            case 17:
-            case 18:
-            case 19:
-            case 20:
-                y = -3.75f;
-                break;
-        }
-
-        return m_difficultySprite->getPosition() + CCPoint{ 0.0f, y };
-    }
-
     bool init(GJGameLevel* level, bool challenge) {
         if (!LevelInfoLayer::init(level, challenge)) return false;
 
@@ -100,7 +65,10 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
         if (!getChildByID("grd-difficulty") && TIERS.find(levelID) != TIERS.end()) {
             auto index = tierToIndex(TIERS[levelID]);
             auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(Mod::get()->expandSpriteName(fmt::format("DIB_{:02d}_btn2_001.png", index).c_str()));
-            betweenDifficultySprite->setPosition(getPositionForIndex(index));
+            betweenDifficultySprite->setPosition({
+                m_difficultySprite->getPositionX(),
+                m_difficultySprite->getPositionY() + (index < 16 ? index < 8 ? -5.0f : -4.25f : -3.75f)
+            });
             betweenDifficultySprite->setID("between-difficulty-sprite"_spr);
             addChild(betweenDifficultySprite, 3);
             m_difficultySprite->setOpacity(0);
@@ -112,43 +80,6 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
 
 #include <Geode/modify/LevelCell.hpp>
 class $modify(DIBLevelCell, LevelCell) {
-    CCPoint getPositionForIndex(GJDifficultySprite* difficultySprite, int index) {
-        auto y = 0.0f;
-
-        switch (index) {
-            case 1:
-            case 2:
-            case 3:
-            case 5:
-            case 6:
-                y = -0.25f;
-                break;
-            case 4:
-            case 7:
-                y = -0.5f;
-                break;
-            case 8:
-            case 9:
-            case 10:
-            case 11:
-            case 12:
-            case 13:
-            case 14:
-            case 15:
-                y = 0.5f;
-                break;
-            case 16:
-            case 17:
-            case 18:
-            case 19:
-            case 20:
-                y = 1.0f;
-                break;
-        }
-
-        return difficultySprite->getPosition() + CCPoint { index > 12 ? -0.125f : 0.0f, y };
-    }
-
     void loadFromLevel(GJGameLevel* level) {
         LevelCell::loadFromLevel(level);
 
@@ -158,7 +89,10 @@ class $modify(DIBLevelCell, LevelCell) {
             if (auto difficultyContainer = m_mainLayer->getChildByID("difficulty-container")) {
                 auto difficultySprite = static_cast<GJDifficultySprite*>(difficultyContainer->getChildByID("difficulty-sprite"));
                 auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(Mod::get()->expandSpriteName(fmt::format("DIB_{:02d}_btn_001.png", index).c_str()));
-                betweenDifficultySprite->setPosition(getPositionForIndex(difficultySprite, index));
+                betweenDifficultySprite->setPosition({
+                    difficultySprite->getPositionX() + (index > 12 ? -0.125f : 0.0f),
+                    difficultySprite->getPositionY() + (index < 16 ? index == 4 || index == 7 ? -0.5f : index < 8 ? -0.25f : 0.5f : 1.0f)
+                });
                 betweenDifficultySprite->setID("between-difficulty-sprite"_spr);
                 difficultyContainer->addChild(betweenDifficultySprite, 3);
                 difficultySprite->setOpacity(0);
