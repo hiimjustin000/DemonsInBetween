@@ -3,33 +3,15 @@
 
 using namespace geode::prelude;
 
+std::map<int, int> INDICES = {
+    {1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {6, 6}, {7, 7}, {8, 8}, {9, 9}, {10, 10},
+    {11, 11}, {12, 11}, {13, 12}, {14, 13}, {15, 14}, {16, 14}, {17, 15}, {18, 15},
+    {19, 16}, {20, 17}, {21, 18}, {22, 19}, {23, 20}, {24, 20}, {25, 20}, {26, 20},
+    {27, 20}, {28, 20}, {29, 20}, {30, 20}, {31, 20}, {32, 20}, {33, 20}, {34, 20},
+    {35, 20}
+};
 std::map<int, int> TIERS = {};
 bool TIERS_TRIED_LOADING = false;
-
-int tierToIndex(int tier) {
-    switch (tier) {
-        case 1: return 1;
-        case 2: return 2;
-        case 3: return 3;
-        case 4: return 4;
-        case 5: return 5;
-        case 6: return 6;
-        case 7: return 7;
-        case 8: return 8;
-        case 9: return 9;
-        case 10: return 10;
-        case 11: case 12: return 11;
-        case 13: return 12;
-        case 14: return 13;
-        case 15: case 16: return 14;
-        case 17: case 18: return 15;
-        case 19: return 16;
-        case 20: return 17;
-        case 21: return 18;
-        case 22: return 19;
-        default: return 20;
-    }
-}
 
 #include <Geode/modify/MenuLayer.hpp>
 class $modify(DIBMenuLayer, MenuLayer) {
@@ -63,7 +45,7 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
 
         auto levelID = level->m_levelID.value();
         if (!getChildByID("grd-difficulty") && TIERS.find(levelID) != TIERS.end()) {
-            auto index = tierToIndex(TIERS[levelID]);
+            auto index = INDICES[TIERS[levelID]];
             auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(Mod::get()->expandSpriteName(fmt::format("DIB_{:02d}_btn2_001.png", index).c_str()));
             betweenDifficultySprite->setPosition({
                 m_difficultySprite->getPositionX(),
@@ -85,7 +67,7 @@ class $modify(DIBLevelCell, LevelCell) {
 
         auto levelID = level->m_levelID.value();
         if (TIERS.find(levelID) != TIERS.end()) {
-            auto index = tierToIndex(TIERS[levelID]);
+            auto index = INDICES[TIERS[levelID]];
             if (auto difficultyContainer = m_mainLayer->getChildByID("difficulty-container")) {
                 auto difficultySprite = static_cast<GJDifficultySprite*>(difficultyContainer->getChildByID("difficulty-sprite"));
                 auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(Mod::get()->expandSpriteName(fmt::format("DIB_{:02d}_btn_001.png", index).c_str()));
