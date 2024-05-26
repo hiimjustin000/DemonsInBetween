@@ -40,11 +40,15 @@ class $modify(DIBMenuLayer, MenuLayer) {
 
 #include <Geode/modify/LevelInfoLayer.hpp>
 class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
+    static void onModify(auto& self) {
+        (void)self.setHookPriority("LevelInfoLayer::init", -50);
+    }
+
     bool init(GJGameLevel* level, bool challenge) {
         if (!LevelInfoLayer::init(level, challenge)) return false;
 
         auto levelID = level->m_levelID.value();
-        if (!getChildByID("grd-difficulty") && TIERS.find(levelID) != TIERS.end()) {
+        if (!getChildByID("grd-difficulty") && !getChildByID("gddp-difficulty") && TIERS.find(levelID) != TIERS.end()) {
             auto index = INDICES[TIERS[levelID]];
             auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(Mod::get()->expandSpriteName(fmt::format("DIB_{:02d}_btn2_001.png", index).c_str()));
             auto pos = CCPoint { 0.0f, 0.0f };
@@ -89,6 +93,8 @@ class $modify(DIBLevelCell, LevelCell) {
         if (TIERS.find(levelID) != TIERS.end()) {
             auto index = INDICES[TIERS[levelID]];
             if (auto difficultyContainer = m_mainLayer->getChildByID("difficulty-container")) {
+                if (difficultyContainer->getChildByID("gddp-difficulty")) return;
+
                 auto difficultySprite = static_cast<GJDifficultySprite*>(difficultyContainer->getChildByID("difficulty-sprite"));
                 auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(Mod::get()->expandSpriteName(fmt::format("DIB_{:02d}_btn_001.png", index).c_str()));
                 auto pos = CCPoint { 0.0f, 0.0f };
