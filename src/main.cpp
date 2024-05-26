@@ -47,10 +47,30 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
         if (!getChildByID("grd-difficulty") && TIERS.find(levelID) != TIERS.end()) {
             auto index = INDICES[TIERS[levelID]];
             auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(Mod::get()->expandSpriteName(fmt::format("DIB_{:02d}_btn2_001.png", index).c_str()));
-            betweenDifficultySprite->setPosition({
-                m_difficultySprite->getPositionX(),
-                m_difficultySprite->getPositionY() + (index < 16 ? index < 8 ? -5.0f : -4.25f : -3.75f)
-            });
+            auto pos = CCPoint { 0.0f, 0.0f };
+            switch (index) {
+                case 1: pos.x = 0.0f; pos.y = -5.0f; break;
+                case 2: pos.x = 0.125f; pos.y = -5.0f; break;
+                case 3: pos.x = 0.0f; pos.y = -5.0f; break;
+                case 4: pos.x = 0.0f; pos.y = -5.125f; break;
+                case 5: pos.x = 0.25f; pos.y = -5.0f; break;
+                case 6: pos.x = 0.125f; pos.y = -4.75f; break;
+                case 7: pos.x = 0.0f; pos.y = -5.0f; break;
+                case 8: pos.x = 0.0f; pos.y = -4.125f; break;
+                case 9: pos.x = -0.125f; pos.y = -4.125f; break;
+                case 10: pos.x = 0.0f; pos.y = -3.75f; break;
+                case 11: pos.x = -0.125f; pos.y = -4.125f; break;
+                case 12: pos.x = 0.0f; pos.y = -4.125f; break;
+                case 13: pos.x = 0.125f; pos.y = -4.125f; break;
+                case 14: pos.x = 0.0f; pos.y = -4.125f; break;
+                case 15: pos.x = 0.0f; pos.y = -4.125f; break;
+                case 16: pos.x = 0.0f; pos.y = -3.625f; break;
+                case 17: pos.x = 0.0f; pos.y = -3.625f; break;
+                case 18: pos.x = 0.0f; pos.y = -3.625f; break;
+                case 19: pos.x = 0.0f; pos.y = -3.5f; break;
+                case 20: pos.x = 0.0f; pos.y = -3.5f; break;
+            }
+            betweenDifficultySprite->setPosition(m_difficultySprite->getPosition() + pos);
             betweenDifficultySprite->setID("between-difficulty-sprite"_spr);
             addChild(betweenDifficultySprite, 3);
             m_difficultySprite->setOpacity(0);
@@ -71,10 +91,30 @@ class $modify(DIBLevelCell, LevelCell) {
             if (auto difficultyContainer = m_mainLayer->getChildByID("difficulty-container")) {
                 auto difficultySprite = static_cast<GJDifficultySprite*>(difficultyContainer->getChildByID("difficulty-sprite"));
                 auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(Mod::get()->expandSpriteName(fmt::format("DIB_{:02d}_btn_001.png", index).c_str()));
-                betweenDifficultySprite->setPosition({
-                    difficultySprite->getPositionX() + (index > 12 ? -0.125f : 0.0f),
-                    difficultySprite->getPositionY() + (index < 16 ? index == 4 || index == 7 ? -0.5f : index < 8 ? -0.25f : 0.5f : 1.0f)
-                });
+                auto pos = CCPoint { 0.0f, 0.0f };
+                switch (index) {
+                    case 1: pos.x = -0.125f; pos.y = -0.25f; break;
+                    case 2: pos.x = -0.125f; pos.y = -0.25f; break;
+                    case 3: pos.x = -0.125f; pos.y = -0.25f; break;
+                    case 4: pos.x = -0.125f; pos.y = -0.375f; break;
+                    case 5: pos.x = -0.125f; pos.y = -0.25f; break;
+                    case 6: pos.x = -0.125f; pos.y = -0.25f; break;
+                    case 7: pos.x = -0.125f; pos.y = -0.375f; break;
+                    case 8: pos.x = -0.125f; pos.y = 0.5f; break;
+                    case 9: pos.x = -0.125f; pos.y = 0.5f; break;
+                    case 10: pos.x = -0.125f; pos.y = 0.25f; break;
+                    case 11: pos.x = -0.125f; pos.y = 0.5f; break;
+                    case 12: pos.x = 0.125f; pos.y = 0.5f; break;
+                    case 13: pos.x = 0.125f; pos.y = 0.5f; break;
+                    case 14: pos.x = 0.125f; pos.y = 0.5f; break;
+                    case 15: pos.x = 0.0f; pos.y = 0.5f; break;
+                    case 16: pos.x = 0.0f; pos.y = 1.25f; break;
+                    case 17: pos.x = 0.0f; pos.y = 1.25f; break;
+                    case 18: pos.x = 0.0f; pos.y = 1.125f; break;
+                    case 19: pos.x = 0.0f; pos.y = 1.125f; break;
+                    case 20: pos.x = 0.0f; pos.y = 1.125f; break;
+                }
+                betweenDifficultySprite->setPosition(difficultySprite->getPosition() + pos);
                 betweenDifficultySprite->setID("between-difficulty-sprite"_spr);
                 difficultyContainer->addChild(betweenDifficultySprite, 3);
                 difficultySprite->setOpacity(0);
