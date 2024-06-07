@@ -21,18 +21,21 @@ class $modify(DIBMenuLayer, MenuLayer) {
         if (TIERS_TRIED_LOADING) return true;
         TIERS_TRIED_LOADING = true;
 
-        web::AsyncWebRequest()
-            .get("https://gdladder.com/api/theList")
-            .json()
-            .then([](matjson::Value const& json) {
-                for (auto const& level : json.as_array()) {
-                    auto levelID = level["ID"].as_int();
-                    if (levelID > 100 && !level["Rating"].is_null()) TIERS[levelID] = (int)round(level["Rating"].as_double());
+        static std::optional<web::WebTask> task = std::nullopt;
+        task = web::WebRequest().get("https://gdladder.com/api/theList").map(
+            [](web::WebResponse* res) {
+                if (res->ok()) {
+                    for (auto const& level : res->json().value().as_array()) {
+                        auto levelID = level["ID"].as_int();
+                        if (levelID > 100 && !level["Rating"].is_null()) TIERS[levelID] = (int)round(level["Rating"].as_double());
+                    }
                 }
-            })
-            .expect([](std::string const& error) {
-                Notification::create("Failed to load GDDL", NotificationIcon::Error)->show();
-            });
+                else Notification::create("Failed to load GDDL", NotificationIcon::Error)->show();
+
+                task = std::nullopt;
+                return *res;
+            }
+        );
 
         return true;
     }
@@ -71,7 +74,7 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
             case 15: pos.x = 0.0f; pos.y = -4.125f; break;
             case 16: pos.x = 0.0f; pos.y = -3.625f; break;
             case 17: pos.x = 0.0f; pos.y = -3.625f; break;
-            case 18: pos.x = 0.0f; pos.y = -3.625f; break;
+            case 18: pos.x = 0.0f; pos.y = -3.5f; break;
             case 19: pos.x = 0.0f; pos.y = -3.5f; break;
             case 20: pos.x = 0.0f; pos.y = -3.5f; break;
         }

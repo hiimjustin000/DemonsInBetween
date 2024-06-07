@@ -1,11 +1,11 @@
 {
-    "geode": "2.0.0-beta.27",
+    "geode": "3.0.0-alpha.1",
     "gd": {
-        "android": "2.205",
-        "win": "2.204",
-        "mac": "2.200"
+        "android": "2.206",
+        "win": "2.206",
+        "mac": "2.206"
     },
-    "version": "v1.0.3",
+    "version": "v1.0.4",
     "id": "hiimjustin000.demons_in_between",
     "name": "Demons In Between",
     "developer": "hiimjustin000",
@@ -14,7 +14,7 @@
     "dependencies": [
         {
             "id": "geode.node-ids",
-            "version": ">=v1.9.1",
+            "version": ">=v1.12.0-beta.1",
             "importance": "required"
         }
     ],
