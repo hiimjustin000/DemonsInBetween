@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.0.5-beta.1 (2024-06-08)
+- Fixed a few things
+
 ## v1.0.4 (2024-06-07)
 - Fixed the alignment of the "Bizarre Demon" difficulty sprite
 - Ported to Geometry Dash v2.206
