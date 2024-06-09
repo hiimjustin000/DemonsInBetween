@@ -15,15 +15,18 @@ bool TIERS_TRIED_LOADING = false;
 
 #include <Geode/modify/MenuLayer.hpp>
 class $modify(DIBMenuLayer, MenuLayer) {
+    struct Fields {
+        EventListener<web::WebTask> m_listener;
+    };
+
     bool init() {
         if (!MenuLayer::init()) return false;
 
         if (TIERS_TRIED_LOADING) return true;
         TIERS_TRIED_LOADING = true;
 
-        static std::optional<web::WebTask> task = std::nullopt;
-        task = web::WebRequest().get("https://gdladder.com/api/theList").map(
-            [](web::WebResponse* res) {
+        m_fields->m_listener.bind([](auto e) {
+            if (auto res = e->getValue()) {
                 if (res->ok()) {
                     for (auto const& level : res->json().value().as_array()) {
                         auto levelID = level["ID"].as_int();
@@ -31,11 +34,10 @@ class $modify(DIBMenuLayer, MenuLayer) {
                     }
                 }
                 else Notification::create("Failed to load GDDL", NotificationIcon::Error)->show();
-
-                task = std::nullopt;
-                return *res;
             }
-        );
+        });
+
+        m_fields->m_listener.setFilter(web::WebRequest().get("https://gdladder.com/api/theList"));
 
         return true;
     }
