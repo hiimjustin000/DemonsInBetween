@@ -3,12 +3,22 @@
 
 using namespace geode::prelude;
 
-std::map<int, int> INDICES = {
-    {1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {6, 6}, {7, 7}, {8, 8}, {9, 9}, {10, 10},
-    {11, 11}, {12, 11}, {13, 12}, {14, 13}, {15, 14}, {16, 14}, {17, 15}, {18, 15},
-    {19, 16}, {20, 17}, {21, 18}, {22, 19}, {23, 20}, {24, 20}, {25, 20}, {26, 20},
-    {27, 20}, {28, 20}, {29, 20}, {30, 20}, {31, 20}, {32, 20}, {33, 20}, {34, 20},
-    {35, 20}
+std::vector<CCPoint> LIL_OFFSETS = {
+    { 0.0f, -5.0f }, { 0.125f, -5.0f }, { 0.0f, -5.0f }, { 0.0f, -5.125f }, { 0.25f, -5.0f },
+    { 0.125f, -4.75f }, { 0.0f, -5.0f }, { 0.0f, -4.125f }, { -0.125f, -4.125f }, { 0.0f, -4.0f },
+    { -0.125f, -4.125f }, { 0.0f, -4.125f }, { 0.125f, -4.125f }, { 0.0f, -4.125f }, { 0.0f, -4.125f },
+    { 0.0f, -3.625f }, { 0.0f, -3.625f }, { 0.0f, -3.5f }, { 0.0f, -3.5f }, { 0.0f, -3.5f }
+};
+std::vector<CCPoint> LC_OFFSETS = {
+    { -0.125f, -0.25f }, { -0.125f, -0.25f }, { -0.125f, -0.25f }, { -0.125f, -0.375f }, { -0.125f, -0.25f },
+    { -0.125f, -0.25f }, { -0.125f, -0.375f }, { -0.125f, 0.5f }, { -0.125f, 0.5f }, { -0.125f, 0.25f },
+    { -0.125f, 0.5f }, { 0.125f, 0.5f }, { 0.125f, 0.5f }, { 0.125f, 0.5f }, { 0.0f, 0.5f },
+    { 0.0f, 1.25f }, { 0.0f, 1.25f }, { 0.0f, 1.125f }, { 0.0f, 1.125f }, { 0.0f, 1.125f }
+};
+
+std::vector<int> INDICES = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11, 12, 13, 14, 14, 15, 15,
+    16, 17, 18, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20
 };
 std::map<int, int> TIERS = {};
 bool TIERS_TRIED_LOADING = false;
@@ -57,30 +67,7 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
 
         auto index = INDICES[TIERS[levelID]];
         auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(Mod::get()->expandSpriteName(fmt::format("DIB_{:02d}_btn2_001.png", index).c_str()));
-        auto pos = CCPoint { 0.0f, 0.0f };
-        switch (index) {
-            case 1: pos.x = 0.0f; pos.y = -5.0f; break;
-            case 2: pos.x = 0.125f; pos.y = -5.0f; break;
-            case 3: pos.x = 0.0f; pos.y = -5.0f; break;
-            case 4: pos.x = 0.0f; pos.y = -5.125f; break;
-            case 5: pos.x = 0.25f; pos.y = -5.0f; break;
-            case 6: pos.x = 0.125f; pos.y = -4.75f; break;
-            case 7: pos.x = 0.0f; pos.y = -5.0f; break;
-            case 8: pos.x = 0.0f; pos.y = -4.125f; break;
-            case 9: pos.x = -0.125f; pos.y = -4.125f; break;
-            case 10: pos.x = 0.0f; pos.y = -4.0f; break;
-            case 11: pos.x = -0.125f; pos.y = -4.125f; break;
-            case 12: pos.x = 0.0f; pos.y = -4.125f; break;
-            case 13: pos.x = 0.125f; pos.y = -4.125f; break;
-            case 14: pos.x = 0.0f; pos.y = -4.125f; break;
-            case 15: pos.x = 0.0f; pos.y = -4.125f; break;
-            case 16: pos.x = 0.0f; pos.y = -3.625f; break;
-            case 17: pos.x = 0.0f; pos.y = -3.625f; break;
-            case 18: pos.x = 0.0f; pos.y = -3.5f; break;
-            case 19: pos.x = 0.0f; pos.y = -3.5f; break;
-            case 20: pos.x = 0.0f; pos.y = -3.5f; break;
-        }
-        betweenDifficultySprite->setPosition(m_difficultySprite->getPosition() + pos);
+        betweenDifficultySprite->setPosition(m_difficultySprite->getPosition() + LIL_OFFSETS[(size_t)(index - 1)]);
         betweenDifficultySprite->setID("between-difficulty-sprite"_spr);
         addChild(betweenDifficultySprite, 3);
         m_difficultySprite->setOpacity(0);
@@ -102,31 +89,8 @@ class $modify(DIBLevelCell, LevelCell) {
 
             auto index = INDICES[TIERS[levelID]];
             auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(Mod::get()->expandSpriteName(fmt::format("DIB_{:02d}_btn_001.png", index).c_str()));
-            auto pos = CCPoint { 0.0f, 0.0f };
-            switch (index) {
-                case 1: pos.x = -0.125f; pos.y = -0.25f; break;
-                case 2: pos.x = -0.125f; pos.y = -0.25f; break;
-                case 3: pos.x = -0.125f; pos.y = -0.25f; break;
-                case 4: pos.x = -0.125f; pos.y = -0.375f; break;
-                case 5: pos.x = -0.125f; pos.y = -0.25f; break;
-                case 6: pos.x = -0.125f; pos.y = -0.25f; break;
-                case 7: pos.x = -0.125f; pos.y = -0.375f; break;
-                case 8: pos.x = -0.125f; pos.y = 0.5f; break;
-                case 9: pos.x = -0.125f; pos.y = 0.5f; break;
-                case 10: pos.x = -0.125f; pos.y = 0.25f; break;
-                case 11: pos.x = -0.125f; pos.y = 0.5f; break;
-                case 12: pos.x = 0.125f; pos.y = 0.5f; break;
-                case 13: pos.x = 0.125f; pos.y = 0.5f; break;
-                case 14: pos.x = 0.125f; pos.y = 0.5f; break;
-                case 15: pos.x = 0.0f; pos.y = 0.5f; break;
-                case 16: pos.x = 0.0f; pos.y = 1.25f; break;
-                case 17: pos.x = 0.0f; pos.y = 1.25f; break;
-                case 18: pos.x = 0.0f; pos.y = 1.125f; break;
-                case 19: pos.x = 0.0f; pos.y = 1.125f; break;
-                case 20: pos.x = 0.0f; pos.y = 1.125f; break;
-            }
             auto difficultySprite = static_cast<GJDifficultySprite*>(difficultyContainer->getChildByID("difficulty-sprite"));
-            betweenDifficultySprite->setPosition(difficultySprite->getPosition() + pos);
+            betweenDifficultySprite->setPosition(difficultySprite->getPosition() + LC_OFFSETS[(size_t)(index - 1)]);
             betweenDifficultySprite->setID("between-difficulty-sprite"_spr);
             difficultyContainer->addChild(betweenDifficultySprite, 3);
             difficultySprite->setOpacity(0);

@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.0.5 (2024-06-14)
+- Finalized the release of v1.0.5
+
 ## v1.0.5-beta.1 (2024-06-08)
 - Fixed a few things
 
