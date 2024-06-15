@@ -66,7 +66,7 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
         if (getChildByID("grd-difficulty") || getChildByID("gddp-difficulty") || TIERS.find(levelID) == TIERS.end()) return true;
 
         auto index = INDICES[TIERS[levelID]];
-        auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(Mod::get()->expandSpriteName(fmt::format("DIB_{:02d}_btn2_001.png", index).c_str()));
+        auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(fmt::format("DIB_{:02d}_btn2_001.png"_spr, index).c_str());
         betweenDifficultySprite->setPosition(m_difficultySprite->getPosition() + LIL_OFFSETS[(size_t)(index - 1)]);
         betweenDifficultySprite->setID("between-difficulty-sprite"_spr);
         addChild(betweenDifficultySprite, 3);
@@ -88,7 +88,7 @@ class $modify(DIBLevelCell, LevelCell) {
             if (difficultyContainer->getChildByID("gddp-difficulty")) return;
 
             auto index = INDICES[TIERS[levelID]];
-            auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(Mod::get()->expandSpriteName(fmt::format("DIB_{:02d}_btn_001.png", index).c_str()));
+            auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(fmt::format("DIB_{:02d}_btn_001.png"_spr, index).c_str());
             auto difficultySprite = static_cast<GJDifficultySprite*>(difficultyContainer->getChildByID("difficulty-sprite"));
             betweenDifficultySprite->setPosition(difficultySprite->getPosition() + LC_OFFSETS[(size_t)(index - 1)]);
             betweenDifficultySprite->setID("between-difficulty-sprite"_spr);
