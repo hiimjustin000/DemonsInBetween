@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.0.6 (2024-06-16)
+- Fixed a bug where the difficulties would not load if the main menu was exited too quickly
+
 ## v1.0.5 (2024-06-14)
 - Finalized the release of v1.0.5
 

@@ -25,29 +25,25 @@ bool TIERS_TRIED_LOADING = false;
 
 #include <Geode/modify/MenuLayer.hpp>
 class $modify(DIBMenuLayer, MenuLayer) {
-    struct Fields {
-        EventListener<web::WebTask> m_listener;
-    };
-
     bool init() {
         if (!MenuLayer::init()) return false;
 
         if (TIERS_TRIED_LOADING) return true;
         TIERS_TRIED_LOADING = true;
 
-        m_fields->m_listener.bind([](auto e) {
-            if (auto res = e->getValue()) {
-                if (res->ok()) {
-                    for (auto const& level : res->json().value().as_array()) {
-                        auto levelID = level["ID"].as_int();
-                        if (levelID > 100 && !level["Rating"].is_null()) TIERS[levelID] = (int)round(level["Rating"].as_double());
-                    }
+        static std::optional<web::WebTask> task = std::nullopt;
+        task = web::WebRequest().get("https://gdladder.com/api/theList").map([](web::WebResponse* res) {
+            if (res->ok()) {
+                for (auto const& level : res->json().value().as_array()) {
+                    auto levelID = level["ID"].as_int();
+                    if (levelID > 100 && !level["Rating"].is_null()) TIERS[levelID] = round(level["Rating"].as_double());
                 }
-                else Notification::create("Failed to load GDDL", NotificationIcon::Error)->show();
             }
-        });
+            else Notification::create("Failed to load GDDL", NotificationIcon::Error)->show();
 
-        m_fields->m_listener.setFilter(web::WebRequest().get("https://gdladder.com/api/theList"));
+            task = std::nullopt;
+            return *res;
+        });
 
         return true;
     }
@@ -65,9 +61,9 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
         auto levelID = level->m_levelID.value();
         if (getChildByID("grd-difficulty") || getChildByID("gddp-difficulty") || TIERS.find(levelID) == TIERS.end()) return true;
 
-        auto index = INDICES[TIERS[levelID]];
+        size_t index = INDICES[TIERS[levelID]];
         auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(fmt::format("DIB_{:02d}_btn2_001.png"_spr, index).c_str());
-        betweenDifficultySprite->setPosition(m_difficultySprite->getPosition() + LIL_OFFSETS[(size_t)(index - 1)]);
+        betweenDifficultySprite->setPosition(m_difficultySprite->getPosition() + LIL_OFFSETS[index - 1]);
         betweenDifficultySprite->setID("between-difficulty-sprite"_spr);
         addChild(betweenDifficultySprite, 3);
         m_difficultySprite->setOpacity(0);
@@ -87,10 +83,10 @@ class $modify(DIBLevelCell, LevelCell) {
         if (auto difficultyContainer = m_mainLayer->getChildByID("difficulty-container")) {
             if (difficultyContainer->getChildByID("gddp-difficulty")) return;
 
-            auto index = INDICES[TIERS[levelID]];
+            size_t index = INDICES[TIERS[levelID]];
             auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(fmt::format("DIB_{:02d}_btn_001.png"_spr, index).c_str());
             auto difficultySprite = static_cast<GJDifficultySprite*>(difficultyContainer->getChildByID("difficulty-sprite"));
-            betweenDifficultySprite->setPosition(difficultySprite->getPosition() + LC_OFFSETS[(size_t)(index - 1)]);
+            betweenDifficultySprite->setPosition(difficultySprite->getPosition() + LC_OFFSETS[index - 1]);
             betweenDifficultySprite->setID("between-difficulty-sprite"_spr);
             difficultyContainer->addChild(betweenDifficultySprite, 3);
             difficultySprite->setOpacity(0);
