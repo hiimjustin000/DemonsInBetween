@@ -102,6 +102,6 @@ jobs:
             build-output/*.pdb
           tag_name: ${{ github.event.head_commit.message }}
           name: ${{ github.event.head_commit.message }}
+          draft: true
           body: |
             Replace with release notes
-          draft: true
