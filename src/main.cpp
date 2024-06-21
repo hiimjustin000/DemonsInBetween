@@ -1,49 +1,14 @@
-#include <Geode/Geode.hpp>
-#include <Geode/utils/web.hpp>
-
-using namespace geode::prelude;
-
-std::vector<CCPoint> LIL_OFFSETS = {
-    { 0.0f, -5.0f }, { 0.125f, -5.0f }, { 0.0f, -5.0f }, { 0.0f, -5.125f }, { 0.25f, -5.0f },
-    { 0.125f, -4.75f }, { 0.0f, -5.0f }, { 0.0f, -4.125f }, { -0.125f, -4.125f }, { 0.0f, -4.0f },
-    { -0.125f, -4.125f }, { 0.0f, -4.125f }, { 0.125f, -4.125f }, { 0.0f, -4.125f }, { 0.0f, -4.125f },
-    { 0.0f, -3.625f }, { 0.0f, -3.625f }, { 0.0f, -3.5f }, { 0.0f, -3.5f }, { 0.0f, -3.5f }
-};
-std::vector<CCPoint> LC_OFFSETS = {
-    { -0.125f, -0.25f }, { -0.125f, -0.25f }, { -0.125f, -0.25f }, { -0.125f, -0.375f }, { -0.125f, -0.25f },
-    { -0.125f, -0.25f }, { -0.125f, -0.375f }, { -0.125f, 0.5f }, { -0.125f, 0.5f }, { -0.125f, 0.25f },
-    { -0.125f, 0.5f }, { 0.125f, 0.5f }, { 0.125f, 0.5f }, { 0.125f, 0.5f }, { 0.0f, 0.5f },
-    { 0.0f, 1.25f }, { 0.0f, 1.25f }, { 0.0f, 1.125f }, { 0.0f, 1.125f }, { 0.0f, 1.125f }
-};
-
-std::vector<int> INDICES = {
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11, 12, 13, 14, 14, 15, 15,
-    16, 17, 18, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20
-};
-std::map<int, int> TIERS = {};
-bool TIERS_TRIED_LOADING = false;
+#include "DemonsInBetween.hpp"
 
 #include <Geode/modify/MenuLayer.hpp>
 class $modify(DIBMenuLayer, MenuLayer) {
     bool init() {
         if (!MenuLayer::init()) return false;
 
-        if (TIERS_TRIED_LOADING) return true;
-        TIERS_TRIED_LOADING = true;
+        if (DemonsInBetween::TRIED_LOADING) return true;
+        DemonsInBetween::TRIED_LOADING = true;
 
-        static std::optional<web::WebTask> task = std::nullopt;
-        task = web::WebRequest().get("https://gdladder.com/api/theList").map([](web::WebResponse* res) {
-            if (res->ok()) {
-                for (auto const& level : res->json().value().as_array()) {
-                    auto levelID = level["ID"].as_int();
-                    if (levelID > 100 && !level["Rating"].is_null()) TIERS[levelID] = round(level["Rating"].as_double());
-                }
-            }
-            else Notification::create("Failed to load GDDL", NotificationIcon::Error)->show();
-
-            task = std::nullopt;
-            return *res;
-        });
+        DemonsInBetween::loadGDDL();
 
         return true;
     }
@@ -58,14 +23,14 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
     bool init(GJGameLevel* level, bool challenge) {
         if (!LevelInfoLayer::init(level, challenge)) return false;
 
-        auto levelID = level->m_levelID.value();
-        if (getChildByID("grd-difficulty") || getChildByID("gddp-difficulty") || TIERS.find(levelID) == TIERS.end()) return true;
+        if (getChildByID("grd-difficulty") || getChildByID("gddp-difficulty")) return true;
 
-        size_t index = INDICES[TIERS[levelID]];
-        auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(fmt::format("DIB_{:02d}_btn2_001.png"_spr, index).c_str());
-        betweenDifficultySprite->setPosition(m_difficultySprite->getPosition() + LIL_OFFSETS[index - 1]);
-        betweenDifficultySprite->setID("between-difficulty-sprite"_spr);
-        addChild(betweenDifficultySprite, 3);
+        auto demon = std::find_if(DemonsInBetween::GDDL.begin(), DemonsInBetween::GDDL.end(), [level](auto const& d) {
+            return d.id == level->m_levelID.value();
+        });
+        if (demon == DemonsInBetween::GDDL.end()) return true;
+
+        addChild(DemonsInBetween::spriteForDifficulty(m_difficultySprite, demon->difficulty, GJDifficultyName::Long), 3);
         m_difficultySprite->setOpacity(0);
 
         return true;
@@ -77,18 +42,16 @@ class $modify(DIBLevelCell, LevelCell) {
     void loadFromLevel(GJGameLevel* level) {
         LevelCell::loadFromLevel(level);
 
-        auto levelID = level->m_levelID.value();
-        if (TIERS.find(levelID) == TIERS.end()) return;
+        auto demon = std::find_if(DemonsInBetween::GDDL.begin(), DemonsInBetween::GDDL.end(), [level](auto const& d) {
+            return d.id == level->m_levelID.value();
+        });
+        if (demon == DemonsInBetween::GDDL.end()) return;
 
         if (auto difficultyContainer = m_mainLayer->getChildByID("difficulty-container")) {
             if (difficultyContainer->getChildByID("gddp-difficulty")) return;
 
-            size_t index = INDICES[TIERS[levelID]];
-            auto betweenDifficultySprite = CCSprite::createWithSpriteFrameName(fmt::format("DIB_{:02d}_btn_001.png"_spr, index).c_str());
             auto difficultySprite = static_cast<GJDifficultySprite*>(difficultyContainer->getChildByID("difficulty-sprite"));
-            betweenDifficultySprite->setPosition(difficultySprite->getPosition() + LC_OFFSETS[index - 1]);
-            betweenDifficultySprite->setID("between-difficulty-sprite"_spr);
-            difficultyContainer->addChild(betweenDifficultySprite, 3);
+            difficultyContainer->addChild(DemonsInBetween::spriteForDifficulty(difficultySprite, demon->difficulty, GJDifficultyName::Short), 3);
             difficultySprite->setOpacity(0);
         }
     }
