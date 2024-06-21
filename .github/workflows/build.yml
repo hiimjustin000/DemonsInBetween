@@ -37,7 +37,7 @@ jobs:
         with:
           build-config: RelWithDebInfo
           export-pdb: true
-          sdk: v3.0.0-beta.1
+          sdk: v3.0.0-beta.4
           combine: true
           target: ${{ matrix.config.target }}
 
