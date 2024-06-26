@@ -37,7 +37,6 @@ jobs:
         with:
           build-config: RelWithDebInfo
           export-pdb: true
-          sdk: v3.0.0-beta.4
           combine: true
           target: ${{ matrix.config.target }}
 
@@ -54,6 +53,7 @@ jobs:
         with:
           name: Build Output
           path: ${{ steps.build.outputs.build-output }}
+
   draft:
     name: Draft Release
     runs-on: ubuntu-latest
@@ -91,7 +91,7 @@ jobs:
         with:
           name: Build Output
           path: build-output
-      
+
       - name: Create Draft Release
         uses: softprops/action-gh-release@v2
         env:
@@ -103,5 +103,3 @@ jobs:
           tag_name: ${{ github.event.head_commit.message }}
           name: ${{ github.event.head_commit.message }}
           draft: true
-          body: |
-            Replace with release notes

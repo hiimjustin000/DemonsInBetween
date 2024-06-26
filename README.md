@@ -2,11 +2,13 @@
 A mod that adds additional demon difficulties in between existing ones.
 
 # Features
-- Adds 15 new demon difficulties in between the 5 existing ones
+- Fifteen new demon difficulties in between the five existing ones
 - These difficulties are determined using the [Geometry Dash Demon Ladder](https://gdladder.com).
+- A quick search popup in the level search menu for the new demon difficulties
 
 # Credits
 - NotCreativeName - Idea for the mod
+- HexCodes - Additional ideas for the mod
 - Krintop - Designer of the mod logo and textures
 - hiimjustin000 - Creator of the mod
 
