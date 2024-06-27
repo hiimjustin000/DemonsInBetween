@@ -13,10 +13,6 @@ void DemonsInBetween::loadGDDL() {
                     level["Enjoyment"].is_null() ? 0.0 : level["Enjoyment"].as_double()
                 });
             }
-
-            std::sort(GDDL.begin(), GDDL.end(), [](auto const& a, auto const& b) {
-                return a.enjoyment > b.enjoyment;
-            });
         }
         else Notification::create("Failed to load GDDL", NotificationIcon::Error)->show();
 

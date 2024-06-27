@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.1.1 (2024-06-27)
+- Changed sorting of levels in the quick search
+
 ## v1.1.0 (2024-06-25)
 - Added a quick search popup to the level search menu
 - Added an image of the popup to the about page
