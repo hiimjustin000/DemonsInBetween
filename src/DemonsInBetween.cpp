@@ -4,8 +4,7 @@
 #define GDDL_URL "https://docs.google.com/spreadsheets/d/1qKlWKpDkOpU1ZF6V6xGfutDY2NvcA8MNPnsv6GBkKPQ/gviz/tq?tqx=out:csv&sheet=GDDL"
 
 void DemonsInBetween::tryLoadCache() {
-    struct stat buffer = {};
-    if (stat(CACHE_PATH.c_str(), &buffer) != 0) {
+    if (!std::filesystem::exists(CACHE_PATH)) {
         log::error("GDDL cache does not exist, loading from spreadsheet");
         loadGDDL();
         return;
