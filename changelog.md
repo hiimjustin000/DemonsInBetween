@@ -1,4 +1,9 @@
 # Demons In Between Changelog
+## v1.1.3 (2024-07-01)
+- The last update actually didn't fix the main menu crash lmfaooooo
+- Updated to use the GDDL spreadsheet, so that the mod doesn't crash the API like it did before
+- Added caching for the GDDL spreadsheet, so that the mod doesn't have to download it every time it's opened
+
 ## v1.1.2 (2024-07-01)
 - Fixed a main menu crash
 

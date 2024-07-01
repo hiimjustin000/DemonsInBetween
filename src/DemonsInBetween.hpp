@@ -6,7 +6,6 @@ using namespace geode::prelude;
 struct LadderDemon {
     int id;
     int difficulty;
-    double enjoyment;
 };
 
 class DemonsInBetween {
@@ -34,8 +33,12 @@ public:
     inline static int DIFFICULTY = 0;
     inline static bool SEARCHING = false;
     inline static std::vector<std::string> SEARCH_RESULTS = {};
+    inline static std::string CACHE_PATH = Mod::get()->getSaveDir().string() + "/gddl.json";
 
+    static void tryLoadCache();
     static void loadGDDL();
+    static void initGDDL(matjson::Array const&, bool saveCache = false);
+    static matjson::Array const& parseGDDL(std::string const&);
     static LadderDemon const& demonForLevel(GJGameLevel*);
     static CCSprite* spriteForDifficulty(GJDifficultySprite*, int, GJDifficultyName);
     static GJSearchObject* searchObjectForPage(int);

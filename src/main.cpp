@@ -8,7 +8,7 @@ class $modify(DIBMenuLayer, MenuLayer) {
         if (DemonsInBetween::TRIED_LOADING) return true;
         DemonsInBetween::TRIED_LOADING = true;
 
-        DemonsInBetween::loadGDDL();
+        DemonsInBetween::tryLoadCache();
 
         return true;
     }
