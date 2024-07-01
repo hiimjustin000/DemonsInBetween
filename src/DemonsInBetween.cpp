@@ -5,7 +5,7 @@ void DemonsInBetween::loadGDDL() {
     static std::optional<web::WebTask> task = std::nullopt;
     task = web::WebRequest().get("https://gdladder.com/api/theList").map([](web::WebResponse* res) {
         if (res->ok()) {
-            for (auto const& level : res->json().value().as_array()) {
+            for (auto const& level : res->json().unwrapOr("[]").as_array()) {
                 auto levelID = level["ID"].as_int();
                 if (levelID > 100 && !level["Rating"].is_null()) GDDL.push_back({
                     levelID,

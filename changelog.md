@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.1.2 (2024-07-01)
+- Fixed a main menu crash
+
 ## v1.1.1 (2024-06-27)
 - Changed sorting of levels in the quick search
 
