@@ -1,11 +1,11 @@
 {
-    "geode": "3.1.1",
+    "geode": "3.2.0",
     "gd": {
         "android": "2.206",
         "win": "2.206",
         "mac": "2.206"
     },
-    "version": "v1.1.3",
+    "version": "v1.1.4",
     "id": "hiimjustin000.demons_in_between",
     "name": "Demons In Between",
     "developer": "hiimjustin000",
@@ -25,6 +25,12 @@
             ],
             "DIB_ShortSheet": [
                 "resources/ShortSheet/*.png"
+            ],
+            "DIB_LegendaryLongSheet": [
+                "resources/LegendaryLongSheet/*.png"
+            ],
+            "DIB_LegendaryShortSheet": [
+                "resources/LegendaryShortSheet/*.png"
             ]
         },
         "sprites": [

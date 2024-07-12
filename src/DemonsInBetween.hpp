@@ -40,6 +40,7 @@ public:
     static void initGDDL(matjson::Array const&, bool saveCache = false);
     static matjson::Array const& parseGDDL(std::string const&);
     static LadderDemon const& demonForLevel(GJGameLevel*);
-    static CCSprite* spriteForDifficulty(GJDifficultySprite*, int, GJDifficultyName);
+    static CCSprite* spriteForDifficulty(GJDifficultySprite*, int, GJDifficultyName, GJFeatureState);
+    static GJFeatureState stateForLevel(GJGameLevel*);
     static GJSearchObject* searchObjectForPage(int);
 };

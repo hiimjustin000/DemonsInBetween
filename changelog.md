@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.1.4 (2024-07-11)
+- Added some compatibility with the mod "GodlikeFaces" by adyagmd
+
 ## v1.1.3 (2024-07-01)
 - The last update actually didn't fix the main menu crash lmfaooooo
 - Updated to use the GDDL spreadsheet, so that the mod doesn't crash the API like it did before

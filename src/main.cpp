@@ -56,7 +56,8 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
         auto& demon = DemonsInBetween::demonForLevel(level);
         if (demon.id == 0) return true;
 
-        addChild(DemonsInBetween::spriteForDifficulty(m_difficultySprite, demon.difficulty, GJDifficultyName::Long), 3);
+        addChild(DemonsInBetween::spriteForDifficulty(m_difficultySprite, demon.difficulty,
+            GJDifficultyName::Long, DemonsInBetween::stateForLevel(level)), 3);
         m_difficultySprite->setOpacity(0);
 
         return true;
@@ -75,7 +76,8 @@ class $modify(DIBLevelCell, LevelCell) {
             if (difficultyContainer->getChildByID("grd-difficulty") || difficultyContainer->getChildByID("gddp-difficulty")) return;
 
             auto difficultySprite = static_cast<GJDifficultySprite*>(difficultyContainer->getChildByID("difficulty-sprite"));
-            difficultyContainer->addChild(DemonsInBetween::spriteForDifficulty(difficultySprite, demon.difficulty, GJDifficultyName::Short), 3);
+            difficultyContainer->addChild(DemonsInBetween::spriteForDifficulty(difficultySprite,
+                demon.difficulty, GJDifficultyName::Short, DemonsInBetween::stateForLevel(level)), 3);
             difficultySprite->setOpacity(0);
         }
     }

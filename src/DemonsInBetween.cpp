@@ -105,13 +105,18 @@ LadderDemon const& DemonsInBetween::demonForLevel(GJGameLevel* level) {
     return demon == GDDL.end() ? defaultDemon : *demon;
 }
 
-CCSprite* DemonsInBetween::spriteForDifficulty(GJDifficultySprite* difficultySprite, int difficulty, GJDifficultyName name) {
+CCSprite* DemonsInBetween::spriteForDifficulty(GJDifficultySprite* difficultySprite, int difficulty, GJDifficultyName name, GJFeatureState state) {
+    auto glow = state == GJFeatureState::Legendary ? "_4" : "";
     auto sprite = CCSprite::createWithSpriteFrameName((name == GJDifficultyName::Long ?
-        fmt::format("DIB_{:02d}_btn2_001.png"_spr, difficulty) : fmt::format("DIB_{:02d}_btn_001.png"_spr, difficulty)).c_str());
+        fmt::format("DIB_{:02d}{}_btn2_001.png"_spr, difficulty, glow) : fmt::format("DIB_{:02d}{}_btn_001.png"_spr, difficulty, glow)).c_str());
     sprite->setPosition(difficultySprite->getPosition() + (name == GJDifficultyName::Long ?
         LONG_OFFSETS[(size_t)difficulty - 1] : SHORT_OFFSETS[(size_t)difficulty - 1]));
     sprite->setID("between-difficulty-sprite"_spr);
     return sprite;
+}
+
+GJFeatureState DemonsInBetween::stateForLevel(GJGameLevel* level) {
+    return Loader::get()->isModLoaded("adyagd.godlikefaces") ? level->m_featured ? (GJFeatureState)(level->m_isEpic + 1) : GJFeatureState::None : GJFeatureState::None;
 }
 
 GJSearchObject* DemonsInBetween::searchObjectForPage(int page) {
