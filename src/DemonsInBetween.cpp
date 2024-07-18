@@ -16,7 +16,7 @@ void DemonsInBetween::tryLoadCache() {
         loadGDDL();
         return;
     }
-    
+
     std::stringstream bufferStream;
     bufferStream << file.rdbuf();
 
@@ -27,7 +27,7 @@ void DemonsInBetween::tryLoadCache() {
         loadGDDL();
         return;
     }
-    
+
     auto cache = json.value();
     if (!cache.contains("cached") || !cache["cached"].is_number() || !cache.contains("list") || !cache["list"].is_array()) {
         log::error("GDDL cache is corrupted, loading from spreadsheet");
@@ -42,6 +42,7 @@ void DemonsInBetween::tryLoadCache() {
         return;
     }
 
+    GDDL_CACHE = cache;
     initGDDL(cache["list"].as_array());
 }
 
@@ -64,16 +65,21 @@ void DemonsInBetween::loadGDDL() {
 
 void DemonsInBetween::initGDDL(matjson::Array const& gddl, bool saveCache) {
     if (saveCache) {
-        auto file = std::fstream(CACHE_PATH, std::ios::out);
-        file << matjson::Value(matjson::Object({ { "cached", time(0) }, { "list", gddl } })).dump(0);
-        file.close();
-        log::info("Successfully saved GDDL cache");
+        GDDL_CACHE = matjson::Object({ { "cached", time(0) }, { "list", gddl } });
+        saveGDDL();
     }
 
     for (auto const& demon : gddl) {
         auto id = demon["ID"].as_int();
         if (id > 100 && !demon["Tier"].is_null()) GDDL.push_back({ id, DIFFICULTY_INDICES[(int)round(demon["Tier"].as_double())] });
     }
+}
+
+void DemonsInBetween::saveGDDL() {
+    auto file = std::fstream(CACHE_PATH, std::ios::out);
+    file << GDDL_CACHE.dump(0);
+    file.close();
+    log::info("Successfully saved GDDL cache");
 }
 
 matjson::Array const& DemonsInBetween::parseGDDL(std::string const& data) {
@@ -88,7 +94,7 @@ matjson::Array const& DemonsInBetween::parseGDDL(std::string const& data) {
             auto key = keys[j];
             auto value = values[j];
             if (key == "ID") demon[key] = std::stoi(value);
-            else if (key == "Tier" || key == "Enjoyment") demon[key] = value != "" ? std::stod(value) : matjson::Value(nullptr);
+            else if (key == "Tier" || key == "Enjoyment") demon[key] = value != "" ? round(std::stod(value) * 100) / 100 : matjson::Value(nullptr);
             else demon[key] = value;
         }
         demons.push_back(demon);
@@ -103,6 +109,41 @@ LadderDemon const& DemonsInBetween::demonForLevel(GJGameLevel* level) {
         return d.id == level->m_levelID.value();
     });
     return demon == GDDL.end() ? defaultDemon : *demon;
+}
+
+void DemonsInBetween::refreshDemonForLevel(EventListener<web::WebTask>&& listenerRef, GJGameLevel* level, MiniFunction<void(LadderDemon const&)> callback) {
+    auto levelID = level->m_levelID.value();
+    auto demon = std::find_if(GDDL.begin(), GDDL.end(), [levelID](auto const& d) {
+        return d.id == levelID;
+    });
+    if (demon == GDDL.end()) return;
+
+    auto&& listener = std::move(listenerRef);
+    listener.bind([callback, demon](web::WebTask::Event* e) {
+        if (auto res = e->getValue()) {
+            if (res->ok()) {
+                auto json = res->json().value();
+                if (json["Rating"].is_null()) return;
+
+                demon->difficulty = DIFFICULTY_INDICES[(int)round(json["Rating"].as_double())];
+
+                auto& cacheArray = GDDL_CACHE["list"].as_array();
+                auto cacheDemon = std::find_if(cacheArray.begin(), cacheArray.end(), [demon](matjson::Value const& d) {
+                    return d["ID"].as_int() == demon->id;
+                });
+                if (cacheDemon != cacheArray.end()) {
+                    cacheDemon->operator[]("Tier") = round(json["Rating"].as_double() * 100) / 100;
+                    cacheDemon->operator[]("Enjoyment") = !json["Enjoyment"].is_null() ? round(json["Enjoyment"].as_double() * 100) / 100 : matjson::Value(nullptr);
+                    GDDL_CACHE_CHANGED = true;
+                    log::info("Updated demon with ID {}", demon->id);
+                } else log::error("Failed to update demon with ID {}", demon->id);
+
+                if (callback) callback(*demon);
+            }
+        }
+    });
+
+    listener.setFilter(web::WebRequest().get(fmt::format("https://gdladder.com/api/level/{}", demon->id).c_str()));
 }
 
 CCSprite* DemonsInBetween::spriteForDifficulty(GJDifficultySprite* difficultySprite, int difficulty, GJDifficultyName name, GJFeatureState state) {

@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.1.5 (2024-07-18)
+- Added cache refreshing for a level's demon difficulty under the refresh button in the level info page
+
 ## v1.1.4 (2024-07-11)
 - Added some compatibility with the mod "GodlikeFaces" by adyagmd
 

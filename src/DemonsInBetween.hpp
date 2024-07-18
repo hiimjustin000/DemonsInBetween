@@ -28,6 +28,8 @@ private:
     };
 public:
     inline static std::vector<LadderDemon> GDDL = {};
+    inline static matjson::Value GDDL_CACHE = {};
+    inline static bool GDDL_CACHE_CHANGED = false;
     inline static bool TRIED_LOADING = false;
     inline static int MAX_PAGE = 0;
     inline static int DIFFICULTY = 0;
@@ -38,8 +40,10 @@ public:
     static void tryLoadCache();
     static void loadGDDL();
     static void initGDDL(matjson::Array const&, bool saveCache = false);
+    static void saveGDDL();
     static matjson::Array const& parseGDDL(std::string const&);
     static LadderDemon const& demonForLevel(GJGameLevel*);
+    static void refreshDemonForLevel(EventListener<web::WebTask>&&, GJGameLevel*, MiniFunction<void(LadderDemon const&)>);
     static CCSprite* spriteForDifficulty(GJDifficultySprite*, int, GJDifficultyName, GJFeatureState);
     static GJFeatureState stateForLevel(GJGameLevel*);
     static GJSearchObject* searchObjectForPage(int);
