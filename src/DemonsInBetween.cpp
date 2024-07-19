@@ -185,11 +185,11 @@ std::string const& DemonsInBetween::infoForLevel(GJGameLevel* level, LadderDemon
 
     auto originalDifficulty = "Unknown Demon";
     switch (level->m_demonDifficulty) {
-        case 0: originalDifficulty = "Hard Demon";
-        case 3: originalDifficulty = "Easy Demon";
-        case 4: originalDifficulty = "Medium Demon";
-        case 5: originalDifficulty = "Insane Demon";
-        case 6: originalDifficulty = "Extreme Demon";
+        case 0: originalDifficulty = "Hard Demon"; break;
+        case 3: originalDifficulty = "Easy Demon"; break;
+        case 4: originalDifficulty = "Medium Demon"; break;
+        case 5: originalDifficulty = "Insane Demon"; break;
+        case 6: originalDifficulty = "Extreme Demon"; break;
     }
 
     static std::string info;

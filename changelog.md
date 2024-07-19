@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.1.7 (2024-07-19)
+- Fixed a bug where the demon's original difficulty would be displayed as "Extreme Demon" in the demon info popup
+
 ## v1.1.6 (2024-07-18)
 - Reduced cache refresh time from 7 days to 2 days
 - Moved the cache refresh button to a new demon info button in the level info page
