@@ -5,6 +5,8 @@ using namespace geode::prelude;
 
 struct LadderDemon {
     int id;
+    int tier;
+    int enjoyment;
     int difficulty;
 };
 
@@ -44,6 +46,7 @@ public:
     static matjson::Array const& parseGDDL(std::string const&);
     static LadderDemon const& demonForLevel(GJGameLevel*);
     static void refreshDemonForLevel(EventListener<web::WebTask>&&, GJGameLevel*, MiniFunction<void(LadderDemon const&)>);
+    static std::string const& infoForLevel(GJGameLevel*, LadderDemon const&);
     static CCSprite* spriteForDifficulty(GJDifficultySprite*, int, GJDifficultyName, GJFeatureState);
     static GJFeatureState stateForLevel(GJGameLevel*);
     static GJSearchObject* searchObjectForPage(int);

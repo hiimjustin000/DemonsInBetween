@@ -60,13 +60,19 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
     bool init(GJGameLevel* level, bool challenge) {
         if (!LevelInfoLayer::init(level, challenge)) return false;
 
-        if (getChildByID("grd-difficulty") || getChildByID("gddp-difficulty")) {
-            m_fields->m_disabled = true;
-            return true;
-        }
+        if (getChildByID("grd-difficulty") || getChildByID("gddp-difficulty")) m_fields->m_disabled = true;
 
         auto& demon = DemonsInBetween::demonForLevel(level);
         if (demon.id == 0) return true;
+
+        auto infoButton = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_infoIcon_001.png", 0.7f, [this, level, demon](auto) {
+            createQuickPopup("Demon Info", DemonsInBetween::infoForLevel(level, demon), "OK", "Refresh", [this, level](auto, bool btn2) {
+                if (btn2) DemonsInBetween::refreshDemonForLevel(std::move(m_fields->m_listener), level, [this](LadderDemon const& demon) { createDemonSprite(demon); });
+            });
+        });
+        auto otherMenu = getChildByID("other-menu");
+        infoButton->setPosition(otherMenu->convertToNodeSpace(m_difficultySprite->getPosition()) + CCPoint { 30.0f, 0.0f });
+        otherMenu->addChild(infoButton);
 
         createDemonSprite(demon);
 
@@ -79,21 +85,6 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
         if (auto existingDifficulty = getChildByID("between-difficulty-sprite"_spr)) existingDifficulty->removeFromParentAndCleanup(true);
         addChild(DemonsInBetween::spriteForDifficulty(m_difficultySprite, demon.difficulty, GJDifficultyName::Long, DemonsInBetween::stateForLevel(m_level)), 3);
         m_difficultySprite->setOpacity(0);
-    }
-
-    void onUpdate(CCObject* sender) {
-        LevelInfoLayer::onUpdate(sender);
-        if (m_fields->m_disabled) return;
-
-        if (!m_isBusy && GameLevelManager::sharedState()->isTimeValid(std::to_string(m_level->m_levelID.value()).c_str(), 3600.0f))
-            DemonsInBetween::refreshDemonForLevel(std::move(m_fields->m_listener), m_level, [this](LadderDemon const& demon) { createDemonSprite(demon); });
-    }
-
-    void levelUpdateFinished(GJGameLevel* level, UpdateResponse response) override {
-        LevelInfoLayer::levelUpdateFinished(level, response);
-        if (m_fields->m_disabled) return;
-
-        DemonsInBetween::refreshDemonForLevel(std::move(m_fields->m_listener), level, [this](LadderDemon const& demon) { createDemonSprite(demon); });
     }
 };
 

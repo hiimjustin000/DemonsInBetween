@@ -1,4 +1,8 @@
 # Demons In Between Changelog
+## v1.1.6 (2024-07-18)
+- Reduced cache refresh time from 7 days to 2 days
+- Moved the cache refresh button to a new demon info button in the level info page
+
 ## v1.1.5 (2024-07-18)
 - Added cache refreshing for a level's demon difficulty under the refresh button in the level info page
 

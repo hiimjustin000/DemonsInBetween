@@ -36,7 +36,7 @@ void DemonsInBetween::tryLoadCache() {
     }
 
     log::info("Successfully loaded GDDL cache");
-    if (time(0) > cache["cached"].as_int() + 604800) {
+    if (time(0) > cache["cached"].as_int() + 172800) {
         log::warn("GDDL cache is outdated, loading from spreadsheet");
         loadGDDL();
         return;
@@ -71,7 +71,15 @@ void DemonsInBetween::initGDDL(matjson::Array const& gddl, bool saveCache) {
 
     for (auto const& demon : gddl) {
         auto id = demon["ID"].as_int();
-        if (id > 100 && !demon["Tier"].is_null()) GDDL.push_back({ id, DIFFICULTY_INDICES[(int)round(demon["Tier"].as_double())] });
+        if (id > 100 && !demon["Tier"].is_null()) {
+            auto tier = (int)round(demon["Tier"].as_double());
+            GDDL.push_back({
+                id,
+                tier,
+                !demon["Enjoyment"].is_null() ? (int)round(demon["Enjoyment"].as_double()) : 0,
+                DIFFICULTY_INDICES[tier]
+            });
+        }
     }
 }
 
@@ -104,7 +112,7 @@ matjson::Array const& DemonsInBetween::parseGDDL(std::string const& data) {
 }
 
 LadderDemon const& DemonsInBetween::demonForLevel(GJGameLevel* level) {
-    static LadderDemon defaultDemon = { 0, 0 };
+    static LadderDemon defaultDemon = { 0, 0, 0, 0 };
     auto demon = std::find_if(GDDL.begin(), GDDL.end(), [level](auto const& d) {
         return d.id == level->m_levelID.value();
     });
@@ -135,8 +143,12 @@ void DemonsInBetween::refreshDemonForLevel(EventListener<web::WebTask>&& listene
                     cacheDemon->operator[]("Tier") = round(json["Rating"].as_double() * 100) / 100;
                     cacheDemon->operator[]("Enjoyment") = !json["Enjoyment"].is_null() ? round(json["Enjoyment"].as_double() * 100) / 100 : matjson::Value(nullptr);
                     GDDL_CACHE_CHANGED = true;
+                    FLAlertLayer::create("Refresh Success", "Successfully refreshed difficulty.", "OK")->show();
                     log::info("Updated demon with ID {}", demon->id);
-                } else log::error("Failed to update demon with ID {}", demon->id);
+                } else {
+                    FLAlertLayer::create("Refresh Failed", "Failed to refresh difficulty. Please try again later.", "OK")->show();
+                    log::error("Failed to update demon with ID {}", demon->id);
+                }
 
                 if (callback) callback(*demon);
             }
@@ -144,6 +156,46 @@ void DemonsInBetween::refreshDemonForLevel(EventListener<web::WebTask>&& listene
     });
 
     listener.setFilter(web::WebRequest().get(fmt::format("https://gdladder.com/api/level/{}", demon->id).c_str()));
+}
+
+std::string const& DemonsInBetween::infoForLevel(GJGameLevel* level, LadderDemon const& demon) {
+    auto difficulty = "Unknown Demon";
+    switch (demon.difficulty) {
+        case 1: difficulty = "Free Demon"; break;
+        case 2: difficulty = "Peaceful Demon"; break;
+        case 3: difficulty = "Simple Demon"; break;
+        case 4: difficulty = "Easy Demon"; break;
+        case 5: difficulty = "Casual Demon"; break;
+        case 6: difficulty = "Mild Demon"; break;
+        case 7: difficulty = "Medium Demon"; break;
+        case 8: difficulty = "Normal Demon"; break;
+        case 9: difficulty = "Moderate Demon"; break;
+        case 10: difficulty = "Tricky Demon"; break;
+        case 11: difficulty = "Hard Demon"; break;
+        case 12: difficulty = "Harder Demon"; break;
+        case 13: difficulty = "Tough Demon"; break;
+        case 14: difficulty = "Wild Demon"; break;
+        case 15: difficulty = "Insane Demon"; break;
+        case 16: difficulty = "Cruel Demon"; break;
+        case 17: difficulty = "Crazy Demon"; break;
+        case 18: difficulty = "Bizarre Demon"; break;
+        case 19: difficulty = "Brutal Demon"; break;
+        case 20: difficulty = "Extreme Demon"; break;
+    }
+
+    auto originalDifficulty = "Unknown Demon";
+    switch (level->m_demonDifficulty) {
+        case 0: originalDifficulty = "Hard Demon";
+        case 3: originalDifficulty = "Easy Demon";
+        case 4: originalDifficulty = "Medium Demon";
+        case 5: originalDifficulty = "Insane Demon";
+        case 6: originalDifficulty = "Extreme Demon";
+    }
+
+    static std::string info;
+    info = fmt::format("<cy>{}</c>\n<cg>Tier</c>: {}\n<cl>Enjoyment</c>: {}\n<cp>Difficulty</c>: {}\n<co>Original Difficulty</c>: {}",
+        level->m_levelName, demon.tier, demon.enjoyment, difficulty, originalDifficulty);
+    return info;
 }
 
 CCSprite* DemonsInBetween::spriteForDifficulty(GJDifficultySprite* difficultySprite, int difficulty, GJDifficultyName name, GJFeatureState state) {
