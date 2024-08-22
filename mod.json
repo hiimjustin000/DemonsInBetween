@@ -48,6 +48,11 @@
             "default": false
         }
     },
+    "links": {
+        "community": "https://discord.gg/QVKmbvBXA7",
+        "source": "https://github.com/hiimjustin000/DemonsInBetween",
+        "homepage": "https://www.hiimjustin000.com"
+    },
     "tags": [
         "content",
         "enhancement",
