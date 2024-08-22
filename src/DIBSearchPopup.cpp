@@ -1,5 +1,70 @@
 #include "DIBSearchPopup.hpp"
 
+TableNode* TableNode::create(int columns, int rows) {
+    auto ret = new TableNode();
+    if (ret->init(columns, rows)) {
+        ret->autorelease();
+        return ret;
+    }
+    delete ret;
+    return nullptr;
+}
+
+bool TableNode::init(int columns, int rows) {
+    if (!CCNode::init()) return false;
+
+    setAnchorPoint({ 0.5f, 0.5f });
+    m_menus = CCArray::create();
+    m_menus->retain();
+    m_columns = columns;
+    m_rows = rows;
+
+    return true;
+}
+
+void TableNode::setColumnLayout(AxisLayout* columnLayout) {
+    m_columnLayout = columnLayout;
+    setLayout(m_columnLayout);
+}
+
+void TableNode::setRowLayout(AxisLayout* rowLayout) {
+    m_rowLayout = rowLayout;
+    for (auto menu : CCArrayExt<CCMenu*>(m_menus)) {
+        menu->setLayout(m_rowLayout);
+    }
+}
+
+void TableNode::setRowHeight(float rowHeight) {
+    m_rowHeight = rowHeight;
+    for (auto menu : CCArrayExt<CCMenu*>(m_menus)) {
+        menu->setContentSize({ m_obContentSize.width, rowHeight });
+    }
+}
+
+void TableNode::updateAllLayouts() {
+    for (auto menu : CCArrayExt<CCMenu*>(m_menus)) {
+        menu->updateLayout();
+    }
+    updateLayout();
+}
+
+void TableNode::addButton(CCMenuItemSpriteExtra* button) {
+    CCMenu* menu = nullptr;
+    if (m_menus->count() <= 0 || static_cast<CCMenu*>(m_menus->objectAtIndex(m_menus->count() - 1))->getChildrenCount() >= m_columns) {
+        menu = CCMenu::create();
+        menu->setContentSize({ m_obContentSize.width, m_rowHeight });
+        menu->setLayout(m_rowLayout);
+        addChild(menu);
+        m_menus->addObject(menu);
+    } else menu = static_cast<CCMenu*>(m_menus->objectAtIndex(m_menus->count() - 1));
+
+    menu->addChild(button);
+}
+
+TableNode::~TableNode() {
+    CC_SAFE_RELEASE(m_menus);
+}
+
 DIBSearchPopup* DIBSearchPopup::create() {
     auto ret = new DIBSearchPopup();
     if (ret->initAnchored(350.0f, 280.0f)) {
@@ -14,71 +79,23 @@ bool DIBSearchPopup::setup() {
     setTitle("Quick Search");
     m_noElasticity = true;
 
-    auto menuRow1 = CCMenu::create();
-    menuRow1->setLayout(RowLayout::create()->setAxisAlignment(AxisAlignment::Even));
-    menuRow1->setPosition(175.0f, 220.0f);
-    menuRow1->setContentSize({ 350.0f, 60.0f });
-    m_mainLayer->addChild(menuRow1);
+    auto table = TableNode::create(5, 4);
+    table->setContentSize({ 350.0f, 240.0f });
+    table->setColumnLayout(ColumnLayout::create()->setAxisReverse(true));
+    table->setRowLayout(RowLayout::create()->setAxisAlignment(AxisAlignment::Even));
+    table->setRowHeight(60.0f);
+    table->setPosition(175.0f, 130.0f);
+    m_mainLayer->addChild(table);
 
-    createDifficultyButton(menuRow1, 1);
-    createDifficultyButton(menuRow1, 2);
-    createDifficultyButton(menuRow1, 3);
-    createDifficultyButton(menuRow1, 4);
-    createDifficultyButton(menuRow1, 5);
+    for (int i = 1; i < 21; i++) {
+        table->addButton(CCMenuItemExt::createSpriteExtraWithFrameName(fmt::format("DIB_{:02d}_btn2_001.png"_spr, i).c_str(), 1.0f, [this, i](auto) {
+            DemonsInBetween::DIFFICULTY = i;
+            DemonsInBetween::SEARCHING = true;
+            CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5f, LevelBrowserLayer::scene(DemonsInBetween::searchObjectForPage(0))));
+        }));
+    }
 
-    menuRow1->updateLayout();
-
-    auto menuRow2 = CCMenu::create();
-    menuRow2->setLayout(RowLayout::create()->setAxisAlignment(AxisAlignment::Even));
-    menuRow2->setPosition(175.0f, 160.0f);
-    menuRow2->setContentSize({ 350.0f, 60.0f });
-    m_mainLayer->addChild(menuRow2);
-
-    createDifficultyButton(menuRow2, 6);
-    createDifficultyButton(menuRow2, 7);
-    createDifficultyButton(menuRow2, 8);
-    createDifficultyButton(menuRow2, 9);
-    createDifficultyButton(menuRow2, 10);
-
-    menuRow2->updateLayout();
-
-    auto menuRow3 = CCMenu::create();
-    menuRow3->setLayout(RowLayout::create()->setAxisAlignment(AxisAlignment::Even));
-    menuRow3->setPosition(175.0f, 100.0f);
-    menuRow3->setContentSize({ 350.0f, 60.0f });
-    m_mainLayer->addChild(menuRow3);
-
-    createDifficultyButton(menuRow3, 11);
-    createDifficultyButton(menuRow3, 12);
-    createDifficultyButton(menuRow3, 13);
-    createDifficultyButton(menuRow3, 14);
-    createDifficultyButton(menuRow3, 15);
-
-    menuRow3->updateLayout();
-
-    auto menuRow4 = CCMenu::create();
-    menuRow4->setLayout(RowLayout::create()->setAxisAlignment(AxisAlignment::Even));
-    menuRow4->setPosition(175.0f, 40.0f);
-    menuRow4->setContentSize({ 350.0f, 60.0f });
-    m_mainLayer->addChild(menuRow4);
-
-    createDifficultyButton(menuRow4, 16);
-    createDifficultyButton(menuRow4, 17);
-    createDifficultyButton(menuRow4, 18);
-    createDifficultyButton(menuRow4, 19);
-    createDifficultyButton(menuRow4, 20);
-
-    menuRow4->updateLayout();
+    table->updateAllLayouts();
 
     return true;
-}
-
-void DIBSearchPopup::createDifficultyButton(CCMenu* menu, int difficulty) {
-    auto button = CCMenuItemExt::createSpriteExtraWithFrameName(fmt::format("DIB_{:02d}_btn2_001.png"_spr, difficulty).c_str(), 1.0f, [this, difficulty](auto) {
-        DemonsInBetween::DIFFICULTY = difficulty;
-        DemonsInBetween::SEARCHING = true;
-        CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5f, LevelBrowserLayer::scene(DemonsInBetween::searchObjectForPage(0))));
-    });
-    button->setTag(difficulty);
-    menu->addChild(button);
 }

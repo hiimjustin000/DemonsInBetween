@@ -60,19 +60,26 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
     bool init(GJGameLevel* level, bool challenge) {
         if (!LevelInfoLayer::init(level, challenge)) return false;
 
-        if (getChildByID("grd-difficulty") || getChildByID("gddp-difficulty")) m_fields->m_disabled = true;
+        if (getChildByID("grd-difficulty")) m_fields->m_disabled = true;
 
-        auto& demon = DemonsInBetween::demonForLevel(level);
-        if (demon.id == 0) return true;
+        auto gddpDifficulty = getChildByID("gddp-difficulty");
+        if (gddpDifficulty && !Mod::get()->getSettingValue<bool>("gddp-integration-override")) m_fields->m_disabled = true;
+        else if (gddpDifficulty) gddpDifficulty->setVisible(false);
 
-        auto infoButton = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_infoIcon_001.png", 0.7f, [this, level, demon](auto) {
+        auto demon = DemonsInBetween::demonForLevel(level);
+        if (demon.id == 0 || demon.difficulty == 0) return true;
+
+        auto infoSprite = CircleButtonSprite::createWithSpriteFrameName(fmt::format("DIB_{:02d}_001.png"_spr, demon.difficulty).c_str());
+        auto infoButton = CCMenuItemExt::createSpriteExtra(infoSprite, [this, level, demon](auto) {
             createQuickPopup("Demon Info", DemonsInBetween::infoForLevel(level, demon), "OK", "Refresh", [this, level](auto, bool btn2) {
-                if (btn2) DemonsInBetween::refreshDemonForLevel(std::move(m_fields->m_listener), level, [this](LadderDemon const& demon) { createDemonSprite(demon); });
+                if (btn2) DemonsInBetween::refreshDemonForLevel(std::move(m_fields->m_listener), level, [this](LadderDemon const& demon) {
+                    createDemonSprite(demon);
+                });
             });
         });
-        auto otherMenu = getChildByID("other-menu");
-        infoButton->setPosition(otherMenu->convertToNodeSpace(m_difficultySprite->getPosition()) + CCPoint { 30.0f, 0.0f });
-        otherMenu->addChild(infoButton);
+        auto leftSideMenu = getChildByID("left-side-menu");
+        leftSideMenu->addChild(infoButton);
+        leftSideMenu->updateLayout();
 
         createDemonSprite(demon);
 
@@ -82,7 +89,7 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
     void createDemonSprite(LadderDemon const& demon) {
         if (m_fields->m_disabled) return;
 
-        if (auto existingDifficulty = getChildByID("between-difficulty-sprite"_spr)) existingDifficulty->removeFromParentAndCleanup(true);
+        if (auto existingDifficulty = getChildByID("between-difficulty-sprite"_spr)) existingDifficulty->removeFromParent();
         addChild(DemonsInBetween::spriteForDifficulty(m_difficultySprite, demon.difficulty, GJDifficultyName::Long, DemonsInBetween::stateForLevel(m_level)), 3);
         m_difficultySprite->setOpacity(0);
     }
@@ -90,20 +97,53 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
 
 #include <Geode/modify/LevelCell.hpp>
 class $modify(DIBLevelCell, LevelCell) {
+    static void onModify(auto& self) {
+        (void)self.setHookPriority("LevelCell::loadFromLevel", -1); // grandpa demon and gddp integration are 0 D:
+    }
+
     void loadFromLevel(GJGameLevel* level) {
         LevelCell::loadFromLevel(level);
 
-        auto& demon = DemonsInBetween::demonForLevel(level);
-        if (demon.id == 0) return;
+        auto demon = DemonsInBetween::demonForLevel(level);
+        if (demon.id == 0 || demon.difficulty == 0) return;
 
-        if (auto difficultyContainer = m_mainLayer->getChildByID("difficulty-container")) {
-            if (difficultyContainer->getChildByID("grd-difficulty") || difficultyContainer->getChildByID("gddp-difficulty")) return;
-
+        auto difficultyContainer = m_mainLayer->getChildByID("difficulty-container");
+        if (!difficultyContainer) difficultyContainer = m_mainLayer->getChildByID("grd-demon-icon-layer");
+        if (difficultyContainer) {
             auto difficultySprite = static_cast<GJDifficultySprite*>(difficultyContainer->getChildByID("difficulty-sprite"));
+            if (!difficultySprite->isVisible()) return; // We're just going to assume it's Grandpa Demon
+
+            auto gddpDifficulty = difficultyContainer->getChildByID("gddp-difficulty");
+            if (gddpDifficulty && !Mod::get()->getSettingValue<bool>("gddp-integration-override")) return;
+            else if (gddpDifficulty) gddpDifficulty->setVisible(false);
+
             difficultyContainer->addChild(DemonsInBetween::spriteForDifficulty(difficultySprite,
                 demon.difficulty, GJDifficultyName::Short, DemonsInBetween::stateForLevel(level)), 3);
             difficultySprite->setOpacity(0);
         }
+    }
+};
+
+#include <Geode/modify/LevelPage.hpp>
+class $modify(DIBLevelPage, LevelPage) {
+    void updateDynamicPage(GJGameLevel* level) {
+        LevelPage::updateDynamicPage(level);
+
+        if (!m_difficultySprite) return;
+        if (auto betweenDifficulty = m_levelDisplay->getChildByID("between-difficulty-sprite"_spr)) betweenDifficulty->removeFromParent();
+
+        auto demon = DemonsInBetween::demonForLevel(level);
+        if (demon.id == 0 || demon.difficulty == 0) {
+            m_difficultySprite->setVisible(true);
+            return;
+        }
+        
+        auto demonSprite = CCSprite::createWithSpriteFrameName(fmt::format("DIB_{:02d}_001.png"_spr, demon.difficulty).c_str());
+        demonSprite->setPosition(m_difficultySprite->getPosition());
+        demonSprite->setScale(1.1f);
+        demonSprite->setID("between-difficulty-sprite"_spr);
+        m_levelDisplay->addChild(demonSprite);
+        m_difficultySprite->setVisible(false);
     }
 };
 
@@ -127,7 +167,7 @@ class $modify(DIBLevelBrowserLayer, LevelBrowserLayer) {
         LevelBrowserLayer::setupPageInfo(pageInfo, key);
 
         if (DemonsInBetween::SEARCHING) {
-            auto size = (int)DemonsInBetween::SEARCH_RESULTS.size();
+            int size = DemonsInBetween::SEARCH_RESULTS.size();
             m_countText->setString(fmt::format("{} to {} of {}", m_fields->m_currentPage * 10 + 1, std::min(size, (m_fields->m_currentPage + 1) * 10), size).c_str());
             m_countText->limitLabelWidth(100.0f, 0.6f, 0.0f);
             m_pageText->setString(std::to_string(m_fields->m_currentPage + 1).c_str());

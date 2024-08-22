@@ -1,4 +1,11 @@
 # Demons In Between Changelog
+## v1.2.0 (2024-08-22)
+- Added main level support for the new demon difficulties
+- Added decimal support for the demon info button in the level info page
+- Added GDDP Integration override setting
+- Moved the demon info button in the level info page to the left side of the page
+- Tweaked the quick search popup
+
 ## v1.1.7 (2024-07-19)
 - Fixed a bug where the demon's original difficulty would be displayed as "Extreme Demon" in the demon info popup
 

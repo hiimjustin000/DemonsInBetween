@@ -13,7 +13,7 @@ A mod that adds additional demon difficulties in between existing ones.
 - [hiimjustin000](user:7466002) - Creator of the mod
 
 # Gallery
-![Quick Search](hiimjustin000.demons_in_between/quicksearch.png&scale:0.8)
+![Quick Search](hiimjustin000.demons_in_between/quicksearch.png&scale:0.8333)
 
 # Difficulties
 - Free Demon (Tier 1)

@@ -20,7 +20,7 @@ void DemonsInBetween::tryLoadCache() {
     std::stringstream bufferStream;
     bufferStream << file.rdbuf();
 
-    auto error = std::string();
+    std::string error;
     auto json = matjson::parse(bufferStream.str(), error);
     if (!error.empty()) {
         log::error("Failed to parse GDDL cache, loading from spreadsheet");
@@ -71,13 +71,18 @@ void DemonsInBetween::initGDDL(matjson::Array const& gddl, bool saveCache) {
 
     for (auto const& demon : gddl) {
         auto id = demon["ID"].as_int();
-        if (id > 100 && !demon["Tier"].is_null()) {
-            auto tier = (int)round(demon["Tier"].as_double());
+        switch (id) {
+            case 1: id = 14; break; // Clubstep
+            case 2: id = 18; break; // Theory of Everything 2
+            case 3: id = 20; break; // Deadlocked
+        }
+        if (!demon["Tier"].is_null()) {
+            auto tier = demon["Tier"].as_double();
             GDDL.push_back({
                 id,
                 tier,
-                !demon["Enjoyment"].is_null() ? (int)round(demon["Enjoyment"].as_double()) : 0,
-                DIFFICULTY_INDICES[tier]
+                !demon["Enjoyment"].is_null() ? demon["Enjoyment"].as_double() : -999.0,
+                DIFFICULTY_INDICES[(int)tier]
             });
         }
     }
@@ -90,14 +95,14 @@ void DemonsInBetween::saveGDDL() {
     log::info("Successfully saved GDDL cache");
 }
 
-matjson::Array const& DemonsInBetween::parseGDDL(std::string const& data) {
+matjson::Array DemonsInBetween::parseGDDL(std::string const& data) {
     // MAKE SURE WE ARE NOT SPLITTING THE COMMAS IN THE QUOTATION MARKS
     auto lines = string::split(data, "\n");
     auto keys = string::split(lines[0].substr(1, lines[0].size() - 2), "\",\"");
-    static auto demons = matjson::Array();
+    matjson::Array demons;
     for (size_t i = 1; i < lines.size(); i++) {
         auto values = string::split(lines[i].substr(1, lines[i].size() - 2), "\",\"");
-        auto demon = matjson::Object();
+        matjson::Object demon;
         for (size_t j = 0; j < keys.size(); j++) {
             auto key = keys[j];
             auto value = values[j];
@@ -111,12 +116,11 @@ matjson::Array const& DemonsInBetween::parseGDDL(std::string const& data) {
     return demons;
 }
 
-LadderDemon const& DemonsInBetween::demonForLevel(GJGameLevel* level) {
-    static LadderDemon defaultDemon = { 0, 0, 0, 0 };
+LadderDemon DemonsInBetween::demonForLevel(GJGameLevel* level) {
     auto demon = std::find_if(GDDL.begin(), GDDL.end(), [level](auto const& d) {
         return d.id == level->m_levelID.value();
     });
-    return demon == GDDL.end() ? defaultDemon : *demon;
+    return demon == GDDL.end() ? LadderDemon { 0, 0.0, 0.0, 0 } : *demon;
 }
 
 void DemonsInBetween::refreshDemonForLevel(EventListener<web::WebTask>&& listenerRef, GJGameLevel* level, MiniFunction<void(LadderDemon const&)> callback) {
@@ -133,14 +137,15 @@ void DemonsInBetween::refreshDemonForLevel(EventListener<web::WebTask>&& listene
                 auto json = res->json().value();
                 if (json["Rating"].is_null()) return;
 
-                demon->difficulty = DIFFICULTY_INDICES[(int)round(json["Rating"].as_double())];
+                demon->difficulty = !json["Rating"].is_null() ? DIFFICULTY_INDICES[(int)round(json["Rating"].as_double())] : 0;
+                demon->enjoyment = !json["Enjoyment"].is_null() ? round(json["Enjoyment"].as_double() * 100) / 100 : -1.0;
 
                 auto& cacheArray = GDDL_CACHE["list"].as_array();
                 auto cacheDemon = std::find_if(cacheArray.begin(), cacheArray.end(), [demon](matjson::Value const& d) {
                     return d["ID"].as_int() == demon->id;
                 });
                 if (cacheDemon != cacheArray.end()) {
-                    cacheDemon->operator[]("Tier") = round(json["Rating"].as_double() * 100) / 100;
+                    cacheDemon->operator[]("Tier") = !json["Rating"].is_null() ? round(json["Rating"].as_double() * 100) / 100 : matjson::Value(nullptr);
                     cacheDemon->operator[]("Enjoyment") = !json["Enjoyment"].is_null() ? round(json["Enjoyment"].as_double() * 100) / 100 : matjson::Value(nullptr);
                     GDDL_CACHE_CHANGED = true;
                     FLAlertLayer::create("Refresh Success", "Successfully refreshed difficulty.", "OK")->show();
@@ -158,7 +163,7 @@ void DemonsInBetween::refreshDemonForLevel(EventListener<web::WebTask>&& listene
     listener.setFilter(web::WebRequest().get(fmt::format("https://gdladder.com/api/level/{}", demon->id).c_str()));
 }
 
-std::string const& DemonsInBetween::infoForLevel(GJGameLevel* level, LadderDemon const& demon) {
+std::string DemonsInBetween::infoForLevel(GJGameLevel* level, LadderDemon const& demon) {
     auto difficulty = "Unknown Demon";
     switch (demon.difficulty) {
         case 1: difficulty = "Free Demon"; break;
@@ -192,10 +197,8 @@ std::string const& DemonsInBetween::infoForLevel(GJGameLevel* level, LadderDemon
         case 6: originalDifficulty = "Extreme Demon"; break;
     }
 
-    static std::string info;
-    info = fmt::format("<cy>{}</c>\n<cg>Tier</c>: {}\n<cl>Enjoyment</c>: {}\n<cp>Difficulty</c>: {}\n<co>Original Difficulty</c>: {}",
-        level->m_levelName, demon.tier, demon.enjoyment, difficulty, originalDifficulty);
-    return info;
+    return fmt::format("<cy>{}</c>\n<cg>Tier</c>: {}\n<cl>Enjoyment</c>: {}\n<cp>Difficulty</c>: {}\n<co>Original Difficulty</c>: {}",
+        level->m_levelName, demon.tier, demon.enjoyment >= 0.0 ? fmt::format("{}", demon.enjoyment) : "N/A", difficulty, originalDifficulty);
 }
 
 CCSprite* DemonsInBetween::spriteForDifficulty(GJDifficultySprite* difficultySprite, int difficulty, GJDifficultyName name, GJFeatureState state) {
@@ -219,7 +222,7 @@ GJSearchObject* DemonsInBetween::searchObjectForPage(int page) {
         if (GDDL[i].difficulty == DIFFICULTY) SEARCH_RESULTS.push_back(std::to_string(GDDL[i].id));
     }
 
-    auto size = (int)SEARCH_RESULTS.size();
+    int size = SEARCH_RESULTS.size();
     MAX_PAGE = (size % 10 == 0 ? size : size + (10 - (size % 10))) / 10 - 1;
 
     return GJSearchObject::create(SearchType::MapPackOnClick, string::join(std::vector<std::string>(

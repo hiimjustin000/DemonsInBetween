@@ -1,11 +1,11 @@
 {
-    "geode": "3.2.0",
+    "geode": "3.4.0",
     "gd": {
         "android": "2.206",
         "win": "2.206",
         "mac": "2.206"
     },
-    "version": "v1.1.7",
+    "version": "v1.2.0",
     "id": "hiimjustin000.demons_in_between",
     "name": "Demons In Between",
     "developer": "hiimjustin000",
@@ -20,6 +20,9 @@
     ],
     "resources": {
         "spritesheets": {
+            "DIB_IconSheet": [
+                "resources/IconSheet/*.png"
+            ],
             "DIB_LongSheet": [
                 "resources/LongSheet/*.png"
             ],
@@ -36,6 +39,14 @@
         "sprites": [
             "resources/*.png"
         ]
+    },
+    "settings": {
+        "gddp-integration-override": {
+            "name": "GDDP Integration Override",
+            "description": "Whether or not to override the GDDP Integration difficulties.",
+            "type": "bool",
+            "default": false
+        }
     },
     "tags": [
         "content",
