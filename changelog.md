@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.2.1 (2024-08-23)
+- Fixed a bug where demons would be offset by one tier due to flooring instead of rounding
+
 ## v1.2.0 (2024-08-22)
 - Added main level support for the new demon difficulties
 - Added decimal support for the demon info button in the level info page

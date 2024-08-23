@@ -82,7 +82,7 @@ void DemonsInBetween::initGDDL(matjson::Array const& gddl, bool saveCache) {
                 id,
                 tier,
                 !demon["Enjoyment"].is_null() ? demon["Enjoyment"].as_double() : -999.0,
-                DIFFICULTY_INDICES[(int)tier]
+                DIFFICULTY_INDICES[(int)round(tier)]
             });
         }
     }
