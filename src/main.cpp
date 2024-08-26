@@ -137,7 +137,7 @@ class $modify(DIBLevelPage, LevelPage) {
             m_difficultySprite->setVisible(true);
             return;
         }
-        
+
         auto demonSprite = CCSprite::createWithSpriteFrameName(fmt::format("DIB_{:02d}_001.png"_spr, demon.difficulty).c_str());
         demonSprite->setPosition(m_difficultySprite->getPosition());
         demonSprite->setScale(1.1f);

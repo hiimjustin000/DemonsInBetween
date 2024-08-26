@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.2.2 (2024-08-26)
+- Fixed legendary demons being offset by slight amounts
+
 ## v1.2.1 (2024-08-23)
 - Fixed a bug where demons would be offset by one tier due to flooring instead of rounding
 
