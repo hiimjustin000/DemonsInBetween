@@ -1,7 +1,7 @@
 # Demons In Between Changelog
 ## v1.2.3 (2024-08-27)
-- Added mythic demon textures
-- Removed the GodlikeFaces requirement for the textures, replacing them with settings
+- Added mythic textures, for when a level is rated mythic
+- Removed the GodlikeFaces requirement for the legendary and mythic textures, replacing it with settings
 - Added a setting to enable or disable the additional demon difficulties
 
 ## v1.2.2 (2024-08-26)
