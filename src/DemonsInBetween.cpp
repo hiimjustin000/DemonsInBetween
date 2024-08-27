@@ -202,7 +202,7 @@ std::string DemonsInBetween::infoForLevel(GJGameLevel* level, LadderDemon const&
 }
 
 CCSprite* DemonsInBetween::spriteForDifficulty(GJDifficultySprite* difficultySprite, int difficulty, GJDifficultyName name, GJFeatureState state) {
-    auto glow = state == GJFeatureState::Legendary ? "_4" : "";
+    auto glow = state == GJFeatureState::Legendary ? "_4" : state == GJFeatureState::Mythic ? "_5" : "";
     auto sprite = CCSprite::createWithSpriteFrameName((name == GJDifficultyName::Long ?
         fmt::format("DIB_{:02d}{}_btn2_001.png"_spr, difficulty, glow) : fmt::format("DIB_{:02d}{}_btn_001.png"_spr, difficulty, glow)).c_str());
     sprite->setPosition(difficultySprite->getPosition() + (name == GJDifficultyName::Long ?
@@ -212,7 +212,10 @@ CCSprite* DemonsInBetween::spriteForDifficulty(GJDifficultySprite* difficultySpr
 }
 
 GJFeatureState DemonsInBetween::stateForLevel(GJGameLevel* level) {
-    return Loader::get()->isModLoaded("adyagd.godlikefaces") ? level->m_featured ? (GJFeatureState)(level->m_isEpic + 1) : GJFeatureState::None : GJFeatureState::None;
+    auto state = level->m_featured ? (GJFeatureState)(level->m_isEpic + 1) : GJFeatureState::None;
+    if (state == GJFeatureState::Legendary && !Mod::get()->getSettingValue<bool>("enable-legendary")) state = GJFeatureState::None;
+    else if (state == GJFeatureState::Mythic && !Mod::get()->getSettingValue<bool>("enable-mythic")) state = GJFeatureState::None;
+    return state;
 }
 
 GJSearchObject* DemonsInBetween::searchObjectForPage(int page) {

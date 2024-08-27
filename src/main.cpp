@@ -60,7 +60,7 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
     bool init(GJGameLevel* level, bool challenge) {
         if (!LevelInfoLayer::init(level, challenge)) return false;
 
-        if (getChildByID("grd-difficulty")) m_fields->m_disabled = true;
+        if (!Mod::get()->getSettingValue<bool>("enable-difficulties") || getChildByID("grd-difficulty")) m_fields->m_disabled = true;
 
         auto gddpDifficulty = getChildByID("gddp-difficulty");
         if (gddpDifficulty && !Mod::get()->getSettingValue<bool>("gddp-integration-override")) m_fields->m_disabled = true;
@@ -103,6 +103,8 @@ class $modify(DIBLevelCell, LevelCell) {
 
     void loadFromLevel(GJGameLevel* level) {
         LevelCell::loadFromLevel(level);
+
+        if (!Mod::get()->getSettingValue<bool>("enable-difficulties")) return;
 
         auto demon = DemonsInBetween::demonForLevel(level);
         if (demon.id == 0 || demon.difficulty == 0) return;

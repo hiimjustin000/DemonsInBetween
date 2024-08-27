@@ -5,7 +5,7 @@
         "win": "2.206",
         "mac": "2.206"
     },
-    "version": "v1.2.2",
+    "version": "v1.2.3",
     "id": "hiimjustin000.demons_in_between",
     "name": "Demons In Between",
     "developer": "hiimjustin000",
@@ -34,6 +34,12 @@
             ],
             "DIB_LegendaryShortSheet": [
                 "resources/LegendaryShortSheet/*.png"
+            ],
+            "DIB_MythicLongSheet": [
+                "resources/MythicLongSheet/*.png"
+            ],
+            "DIB_MythicShortSheet": [
+                "resources/MythicShortSheet/*.png"
             ]
         },
         "sprites": [
@@ -41,6 +47,24 @@
         ]
     },
     "settings": {
+        "enable-difficulties": {
+            "name": "Enable Demon Difficulties",
+            "description": "Whether or not to enable the additional demon difficulties.",
+            "type": "bool",
+            "default": true
+        },
+        "enable-legendary": {
+            "name": "Enable Legendary Textures",
+            "description": "Whether or not to enable the legendary difficulty textures.",
+            "type": "bool",
+            "default": true
+        },
+        "enable-mythic": {
+            "name": "Enable Mythic Textures",
+            "description": "Whether or not to enable the mythic difficulty textures.",
+            "type": "bool",
+            "default": true
+        },
         "gddp-integration-override": {
             "name": "GDDP Integration Override",
             "description": "Whether or not to override the GDDP Integration difficulties.",
