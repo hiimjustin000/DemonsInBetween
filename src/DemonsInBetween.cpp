@@ -78,7 +78,7 @@ void DemonsInBetween::initGDDL(matjson::Array const& gddl, bool saveCache) {
         }
         if (!demon["Tier"].is_null()) {
             auto tier = demon["Tier"].as_double();
-            GDDL.push_back({
+            (id < 100 ? GDDL_MAIN : GDDL).push_back({
                 id,
                 tier,
                 !demon["Enjoyment"].is_null() ? demon["Enjoyment"].as_double() : -999.0,
@@ -116,11 +116,12 @@ matjson::Array DemonsInBetween::parseGDDL(std::string const& data) {
     return demons;
 }
 
-LadderDemon DemonsInBetween::demonForLevel(GJGameLevel* level) {
-    auto demon = std::find_if(GDDL.begin(), GDDL.end(), [level](auto const& d) {
+LadderDemon DemonsInBetween::demonForLevel(GJGameLevel* level, bool main) {
+    auto& gddl = main ? GDDL_MAIN : GDDL;
+    auto demon = std::find_if(gddl.begin(), gddl.end(), [level, main](auto const& d) {
         return d.id == level->m_levelID.value();
     });
-    return demon == GDDL.end() ? LadderDemon { 0, 0.0, 0.0, 0 } : *demon;
+    return demon == gddl.end() ? LadderDemon { 0, 0.0, 0.0, 0 } : *demon;
 }
 
 void DemonsInBetween::refreshDemonForLevel(EventListener<web::WebTask>&& listenerRef, GJGameLevel* level, MiniFunction<void(LadderDemon const&)> callback) {
@@ -198,7 +199,7 @@ std::string DemonsInBetween::infoForLevel(GJGameLevel* level, LadderDemon const&
     }
 
     return fmt::format("<cy>{}</c>\n<cg>Tier</c>: {}\n<cl>Enjoyment</c>: {}\n<cp>Difficulty</c>: {}\n<co>Original Difficulty</c>: {}",
-        level->m_levelName, demon.tier, demon.enjoyment >= 0.0 ? fmt::format("{}", demon.enjoyment) : "N/A", difficulty, originalDifficulty);
+        level->m_levelName.data(), demon.tier, demon.enjoyment >= 0.0 ? fmt::format("{}", demon.enjoyment) : "N/A", difficulty, originalDifficulty);
 }
 
 CCSprite* DemonsInBetween::spriteForDifficulty(GJDifficultySprite* difficultySprite, int difficulty, GJDifficultyName name, GJFeatureState state) {

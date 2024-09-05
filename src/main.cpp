@@ -1,5 +1,9 @@
 #include "DIBSearchPopup.hpp"
 
+$on_mod(Loaded) {
+    DemonsInBetween::CACHE_PATH = (Mod::get()->getSaveDir() / "gddl.json").string();
+}
+
 $on_mod(DataSaved) {
     if (DemonsInBetween::GDDL_CACHE_CHANGED) DemonsInBetween::saveGDDL();
 }
@@ -60,13 +64,13 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
     bool init(GJGameLevel* level, bool challenge) {
         if (!LevelInfoLayer::init(level, challenge)) return false;
 
-        if (!Mod::get()->getSettingValue<bool>("enable-difficulties") || getChildByID("grd-difficulty")) m_fields->m_disabled = true;
+        if (getChildByID("grd-difficulty") || !Mod::get()->getSettingValue<bool>("enable-difficulties")) m_fields->m_disabled = true;
 
         auto gddpDifficulty = getChildByID("gddp-difficulty");
         if (gddpDifficulty && !Mod::get()->getSettingValue<bool>("gddp-integration-override")) m_fields->m_disabled = true;
         else if (gddpDifficulty) gddpDifficulty->setVisible(false);
 
-        auto demon = DemonsInBetween::demonForLevel(level);
+        auto demon = DemonsInBetween::demonForLevel(level, false);
         if (demon.id == 0 || demon.difficulty == 0) return true;
 
         auto infoSprite = CircleButtonSprite::createWithSpriteFrameName(fmt::format("DIB_{:02d}_001.png"_spr, demon.difficulty).c_str());
@@ -106,7 +110,7 @@ class $modify(DIBLevelCell, LevelCell) {
 
         if (!Mod::get()->getSettingValue<bool>("enable-difficulties")) return;
 
-        auto demon = DemonsInBetween::demonForLevel(level);
+        auto demon = DemonsInBetween::demonForLevel(level, false);
         if (demon.id == 0 || demon.difficulty == 0) return;
 
         auto difficultyContainer = m_mainLayer->getChildByID("difficulty-container");
@@ -131,14 +135,15 @@ class $modify(DIBLevelPage, LevelPage) {
     void updateDynamicPage(GJGameLevel* level) {
         LevelPage::updateDynamicPage(level);
 
-        if (!m_difficultySprite) return;
-        if (auto betweenDifficulty = m_levelDisplay->getChildByID("between-difficulty-sprite"_spr)) betweenDifficulty->removeFromParent();
-
-        auto demon = DemonsInBetween::demonForLevel(level);
-        if (demon.id == 0 || demon.difficulty == 0) {
+        if (auto betweenDifficulty = m_levelDisplay->getChildByID("between-difficulty-sprite"_spr)) {
+            betweenDifficulty->removeFromParent();
             m_difficultySprite->setVisible(true);
-            return;
         }
+
+        if (level->m_levelID.value() < 1 || GameStatsManager::sharedState()->getStat("8") < m_level->m_requiredCoins) return;
+
+        auto demon = DemonsInBetween::demonForLevel(level, true);
+        if (demon.id == 0 || demon.difficulty == 0) return;
 
         auto demonSprite = CCSprite::createWithSpriteFrameName(fmt::format("DIB_{:02d}_001.png"_spr, demon.difficulty).c_str());
         demonSprite->setPosition(m_difficultySprite->getPosition());
@@ -217,22 +222,23 @@ class $modify(DIBLevelBrowserLayer, LevelBrowserLayer) {
 
         if (DemonsInBetween::SEARCHING) loadPage(DemonsInBetween::searchObjectForPage(--m_fields->m_currentPage));
     }
-#ifdef GEODE_IS_MACOS
+#ifdef GEODE_IS_MACOS // In the Geometry Dash binary for macOS, onNextPage and onPrevPage are inlined into keyDown
     void keyDown(enumKeyCodes key) override {
+        LevelBrowserLayer::keyDown(key);
+
         if (DemonsInBetween::SEARCHING) {
             switch (key) {
                 case KEY_Left: case CONTROLLER_Left:
-                    if (m_leftArrow && m_leftArrow->isVisible()) loadPage(DemonsInBetween::searchObjectForPage(--m_fields->m_currentPage));
+                    if (m_leftArrow && m_leftArrow->isVisible() && m_leftArrow->isEnabled())
+                        loadPage(DemonsInBetween::searchObjectForPage(--m_fields->m_currentPage));
                     break;
                 case KEY_Right: case CONTROLLER_Right:
-                    if (m_rightArrow && m_rightArrow->isVisible()) loadPage(DemonsInBetween::searchObjectForPage(++m_fields->m_currentPage));
+                    if (m_rightArrow && m_rightArrow->isVisible() && m_rightArrow->isEnabled())
+                        loadPage(DemonsInBetween::searchObjectForPage(++m_fields->m_currentPage));
                     break;
-                default:
-                    LevelBrowserLayer::keyDown(key);
-                    break;
+                default: break;
             }
         }
-        else LevelBrowserLayer::keyDown(key);
     }
 #endif
 };

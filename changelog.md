@@ -1,4 +1,9 @@
 # Demons In Between Changelog
+## v1.2.4 (2024-09-04)
+- (Possibly) Fixed a bug where the game would sometimes crash when clicking on the demon info button on Android
+- Fixed a bug where the demon difficulty would show if the main level was locked
+- Fixed some GDPS conflicts with main level ratings
+
 ## v1.2.3 (2024-08-27)
 - Added mythic textures, for when a level is rated mythic
 - Removed the GodlikeFaces requirement for the legendary and mythic textures, replacing it with settings
