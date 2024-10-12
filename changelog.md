@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.2.5 (2024-10-12)
+- Attempted to fix that Android crash again
+
 ## v1.2.4 (2024-09-04)
 - (Possibly) Fixed a bug where the game would sometimes crash when clicking on the demon info button on Android
 - Fixed a bug where the demon difficulty would show if the main level was locked

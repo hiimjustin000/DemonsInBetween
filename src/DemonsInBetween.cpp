@@ -198,8 +198,18 @@ std::string DemonsInBetween::infoForLevel(GJGameLevel* level, LadderDemon const&
         case 6: originalDifficulty = "Extreme Demon"; break;
     }
 
-    return fmt::format("<cy>{}</c>\n<cg>Tier</c>: {}\n<cl>Enjoyment</c>: {}\n<cp>Difficulty</c>: {}\n<co>Original Difficulty</c>: {}",
-        level->m_levelName.data(), demon.tier, demon.enjoyment >= 0.0 ? fmt::format("{}", demon.enjoyment) : "N/A", difficulty, originalDifficulty);
+    return fmt::format(
+        "<cy>{}</c>\n"
+        "<cg>Tier</c>: {}\n"
+        "<cl>Enjoyment</c>: {}\n"
+        "<cp>Difficulty</c>: {}\n"
+        "<co>Original Difficulty</c>: {}",
+        std::string(level->m_levelName),
+        demon.tier,
+        demon.enjoyment >= 0.0 ? fmt::format("{}", demon.enjoyment) : "N/A",
+        difficulty,
+        originalDifficulty
+    );
 }
 
 CCSprite* DemonsInBetween::spriteForDifficulty(GJDifficultySprite* difficultySprite, int difficulty, GJDifficultyName name, GJFeatureState state) {
