@@ -1,7 +1,4 @@
-#include <Geode/Geode.hpp>
 #include <Geode/utils/web.hpp>
-
-using namespace geode::prelude;
 
 struct LadderDemon {
     int id;
@@ -12,13 +9,13 @@ struct LadderDemon {
 
 class DemonsInBetween {
 private:
-    inline static std::vector<CCPoint> LONG_OFFSETS = {
+    inline static std::vector<cocos2d::CCPoint> LONG_OFFSETS = {
         { 0.0f, -5.0f }, { 0.125f, -5.0f }, { 0.0f, -5.0f }, { 0.0f, -5.125f }, { 0.25f, -5.0f },
         { 0.125f, -4.75f }, { 0.0f, -5.0f }, { 0.0f, -4.125f }, { -0.125f, -4.125f }, { 0.0f, -4.0f },
         { -0.125f, -4.125f }, { 0.0f, -4.125f }, { 0.125f, -4.125f }, { 0.0f, -4.125f }, { 0.0f, -4.125f },
         { 0.0f, -3.625f }, { 0.0f, -3.625f }, { 0.0f, -3.5f }, { 0.0f, -3.5f }, { 0.0f, -3.5f }
     };
-    inline static std::vector<CCPoint> SHORT_OFFSETS = {
+    inline static std::vector<cocos2d::CCPoint> SHORT_OFFSETS = {
         { -0.125f, -0.25f }, { -0.125f, -0.25f }, { -0.125f, -0.25f }, { -0.125f, -0.375f }, { -0.125f, -0.25f },
         { -0.125f, -0.25f }, { -0.125f, -0.375f }, { -0.125f, 0.5f }, { -0.125f, 0.5f }, { -0.125f, 0.25f },
         { -0.125f, 0.5f }, { 0.125f, 0.5f }, { 0.125f, 0.5f }, { 0.125f, 0.5f }, { 0.0f, 0.5f },
@@ -32,6 +29,7 @@ public:
     inline static std::vector<LadderDemon> GDDL = {};
     inline static std::vector<LadderDemon> GDDL_MAIN = {};
     inline static matjson::Value GDDL_CACHE = {};
+    inline static std::set<int> REFRESHED_DEMONS = {};
     inline static bool GDDL_CACHE_CHANGED = false;
     inline static bool TRIED_LOADING = false;
     inline static int MAX_PAGE = 0;
@@ -42,13 +40,13 @@ public:
 
     static void tryLoadCache();
     static void loadGDDL();
-    static void initGDDL(matjson::Array const&, bool saveCache = false);
+    static void initGDDL(std::vector<matjson::Value> const&, bool saveCache = false);
     static void saveGDDL();
-    static matjson::Array parseGDDL(std::string const&);
+    static std::vector<matjson::Value> parseGDDL(std::string const&);
     static LadderDemon demonForLevel(GJGameLevel*, bool);
-    static void refreshDemonForLevel(EventListener<web::WebTask>&&, GJGameLevel*, MiniFunction<void(LadderDemon const&)>);
+    static void refreshDemonForLevel(geode::EventListener<geode::utils::web::WebTask>&&, GJGameLevel*, std::function<void(LadderDemon const&)> const&, bool);
     static std::string infoForLevel(GJGameLevel*, LadderDemon const&);
-    static CCSprite* spriteForDifficulty(GJDifficultySprite*, int, GJDifficultyName, GJFeatureState);
+    static cocos2d::CCSprite* spriteForDifficulty(GJDifficultySprite*, int, GJDifficultyName, GJFeatureState);
     static GJFeatureState stateForLevel(GJGameLevel*);
     static GJSearchObject* searchObjectForPage(int);
 };

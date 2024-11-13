@@ -4,12 +4,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-project(DemonsInBetween VERSION 1.2.5)
+project(DemonsInBetween VERSION 1.3.0)
 
 add_library(${PROJECT_NAME} SHARED
+    src/classes/DIBSearchPopup.cpp
+    src/hooks/LevelBrowserLayer.cpp
+    src/hooks/LevelCell.cpp
+    src/hooks/LevelInfoLayer.cpp
+    src/hooks/LevelPage.cpp
+    src/hooks/LevelSearchLayer.cpp
+    src/hooks/MenuLayer.cpp
     src/DemonsInBetween.cpp
-    src/DIBSearchPopup.cpp
-    src/main.cpp
 )
 
 if (NOT DEFINED ENV{GEODE_SDK})

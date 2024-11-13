@@ -1,5 +1,5 @@
 # Demons In Between
-A mod that adds additional demon difficulties in between existing ones.
+A mod that adds demon difficulties in between existing ones.
 
 # Features
 - Fifteen new demon difficulties in between the five existing ones, determined using the [Geometry Dash Demon Ladder](https://gdladder.com)

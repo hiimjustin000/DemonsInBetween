@@ -1,4 +1,8 @@
 # Demons In Between Changelog
+## v1.3.0-beta.1 (2024-11-13)
+- Added auto-refreshing for the demon difficulties in the level info page
+- Ported to Geometry Dash v2.207
+
 ## v1.2.5 (2024-10-12)
 - Attempted to fix that Android crash again
 

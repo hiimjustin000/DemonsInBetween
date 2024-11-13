@@ -1,4 +1,7 @@
+#include "../DemonsInBetween.hpp"
 #include "DIBSearchPopup.hpp"
+
+using namespace geode::prelude;
 
 TableNode* TableNode::create(int columns, int rows) {
     auto ret = new TableNode();
@@ -84,14 +87,14 @@ bool DIBSearchPopup::setup() {
     table->setColumnLayout(ColumnLayout::create()->setAxisReverse(true));
     table->setRowLayout(RowLayout::create()->setAxisAlignment(AxisAlignment::Even));
     table->setRowHeight(60.0f);
-    table->setPosition(175.0f, 130.0f);
+    table->setPosition({ 175.0f, 130.0f });
     m_mainLayer->addChild(table);
 
     for (int i = 1; i < 21; i++) {
         table->addButton(CCMenuItemExt::createSpriteExtraWithFrameName(fmt::format("DIB_{:02d}_btn2_001.png"_spr, i).c_str(), 1.0f, [this, i](auto) {
             DemonsInBetween::DIFFICULTY = i;
             DemonsInBetween::SEARCHING = true;
-            CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5f, LevelBrowserLayer::scene(DemonsInBetween::searchObjectForPage(0))));
+            CCDirector::get()->pushScene(CCTransitionFade::create(0.5f, LevelBrowserLayer::scene(DemonsInBetween::searchObjectForPage(0))));
         }));
     }
 

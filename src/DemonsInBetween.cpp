@@ -1,7 +1,16 @@
-#include <Geode/utils/string.hpp>
 #include "DemonsInBetween.hpp"
 
+using namespace geode::prelude;
+
 #define GDDL_URL "https://docs.google.com/spreadsheets/d/1qKlWKpDkOpU1ZF6V6xGfutDY2NvcA8MNPnsv6GBkKPQ/gviz/tq?tqx=out:csv&sheet=GDDL"
+
+$on_mod(Loaded) {
+    DemonsInBetween::CACHE_PATH = (Mod::get()->getSaveDir() / "gddl.json").string();
+}
+
+$on_mod(DataSaved) {
+    if (DemonsInBetween::GDDL_CACHE_CHANGED) DemonsInBetween::saveGDDL();
+}
 
 void DemonsInBetween::tryLoadCache() {
     if (!std::filesystem::exists(CACHE_PATH)) {
@@ -21,37 +30,37 @@ void DemonsInBetween::tryLoadCache() {
     bufferStream << file.rdbuf();
 
     std::string error;
-    auto json = matjson::parse(bufferStream.str(), error);
-    if (!error.empty()) {
+    auto json = matjson::parse(bufferStream.str());
+    if (!json.isOk()) {
         log::error("Failed to parse GDDL cache, loading from spreadsheet");
         loadGDDL();
         return;
     }
 
-    auto cache = json.value();
-    if (!cache.contains("cached") || !cache["cached"].is_number() || !cache.contains("list") || !cache["list"].is_array()) {
+    auto cache = json.unwrap();
+    if (!cache.contains("cached") || !cache["cached"].isNumber() || !cache.contains("list") || !cache["list"].isArray()) {
         log::error("GDDL cache is corrupted, loading from spreadsheet");
         loadGDDL();
         return;
     }
 
     log::info("Successfully loaded GDDL cache");
-    if (time(0) > cache["cached"].as_int() + 172800) {
+    if (time(0) > cache["cached"].asInt().unwrap() + 172800) {
         log::warn("GDDL cache is outdated, loading from spreadsheet");
         loadGDDL();
         return;
     }
 
     GDDL_CACHE = cache;
-    initGDDL(cache["list"].as_array());
+    initGDDL(cache["list"].asArray().unwrap());
 }
 
 void DemonsInBetween::loadGDDL() {
     static std::optional<web::WebTask> task = std::nullopt;
     task = web::WebRequest().get(GDDL_URL).map([](web::WebResponse* res) {
-        if (res->ok()) {
+        if (res->ok() && res->string().isOk()) {
             log::info("Successfully loaded GDDL spreadsheet with status code {}", res->code());
-            initGDDL(parseGDDL(res->string().value()), true);
+            initGDDL(parseGDDL(res->string().unwrap()), true);
         }
         else {
             log::error("Failed to load GDDL spreadsheet with status code {}", res->code());
@@ -63,25 +72,25 @@ void DemonsInBetween::loadGDDL() {
     });
 }
 
-void DemonsInBetween::initGDDL(matjson::Array const& gddl, bool saveCache) {
+void DemonsInBetween::initGDDL(std::vector<matjson::Value> const& gddl, bool saveCache) {
     if (saveCache) {
-        GDDL_CACHE = matjson::Object({ { "cached", time(0) }, { "list", gddl } });
+        GDDL_CACHE = matjson::makeObject({ { "cached", time(0) }, { "list", gddl } });
         saveGDDL();
     }
 
     for (auto const& demon : gddl) {
-        auto id = demon["ID"].as_int();
+        int id = demon["ID"].asInt().unwrapOr(0);
         switch (id) {
             case 1: id = 14; break; // Clubstep
             case 2: id = 18; break; // Theory of Everything 2
             case 3: id = 20; break; // Deadlocked
         }
-        if (!demon["Tier"].is_null()) {
-            auto tier = demon["Tier"].as_double();
+        if (!demon["Tier"].isNull()) {
+            auto tier = demon["Tier"].asDouble().unwrapOr(0.0);
             (id < 100 ? GDDL_MAIN : GDDL).push_back({
                 id,
                 tier,
-                !demon["Enjoyment"].is_null() ? demon["Enjoyment"].as_double() : -999.0,
+                !demon["Enjoyment"].isNull() ? demon["Enjoyment"].asDouble().unwrapOr(0.0) : -999.0,
                 DIFFICULTY_INDICES[(int)round(tier)]
             });
         }
@@ -95,19 +104,20 @@ void DemonsInBetween::saveGDDL() {
     log::info("Successfully saved GDDL cache");
 }
 
-matjson::Array DemonsInBetween::parseGDDL(std::string const& data) {
+std::vector<matjson::Value> DemonsInBetween::parseGDDL(std::string const& data) {
     // MAKE SURE WE ARE NOT SPLITTING THE COMMAS IN THE QUOTATION MARKS
     auto lines = string::split(data, "\n");
     auto keys = string::split(lines[0].substr(1, lines[0].size() - 2), "\",\"");
-    matjson::Array demons;
+    std::vector<matjson::Value> demons;
     for (size_t i = 1; i < lines.size(); i++) {
         auto values = string::split(lines[i].substr(1, lines[i].size() - 2), "\",\"");
-        matjson::Object demon;
+        matjson::Value demon;
         for (size_t j = 0; j < keys.size(); j++) {
             auto key = keys[j];
             auto value = values[j];
-            if (key == "ID") demon[key] = std::stoi(value);
-            else if (key == "Tier" || key == "Enjoyment") demon[key] = value != "" ? round(std::stod(value) * 100) / 100 : matjson::Value(nullptr);
+            if (key == "ID") demon[key] = numFromString<int>(value).unwrapOr(-1);
+            else if (key == "Tier") demon[key] = value != "" ? round(numFromString<double>(value).unwrapOr(0.0) * 100) / 100 : matjson::Value(nullptr);
+            else if (key == "Enjoyment") demon[key] = value != "" ? round(numFromString<double>(value).unwrapOr(-999.0) * 100) / 100 : matjson::Value(nullptr);
             else demon[key] = value;
         }
         demons.push_back(demon);
@@ -124,7 +134,9 @@ LadderDemon DemonsInBetween::demonForLevel(GJGameLevel* level, bool main) {
     return demon == gddl.end() ? LadderDemon { 0, 0.0, 0.0, 0 } : *demon;
 }
 
-void DemonsInBetween::refreshDemonForLevel(EventListener<web::WebTask>&& listenerRef, GJGameLevel* level, MiniFunction<void(LadderDemon const&)> callback) {
+void DemonsInBetween::refreshDemonForLevel(
+    EventListener<web::WebTask>&& listenerRef, GJGameLevel* level, std::function<void(LadderDemon const&)> const& callback, bool showPopup
+) {
     auto levelID = level->m_levelID.value();
     auto demon = std::find_if(GDDL.begin(), GDDL.end(), [levelID](auto const& d) {
         return d.id == levelID;
@@ -132,32 +144,75 @@ void DemonsInBetween::refreshDemonForLevel(EventListener<web::WebTask>&& listene
     if (demon == GDDL.end()) return;
 
     auto&& listener = std::move(listenerRef);
-    listener.bind([callback, demon](web::WebTask::Event* e) {
+    listener.bind([callback, demon, showPopup](web::WebTask::Event* e) {
         if (auto res = e->getValue()) {
-            if (res->ok()) {
-                auto json = res->json().value();
-                if (json["Rating"].is_null()) return;
+            REFRESHED_DEMONS.insert(demon->id);
 
-                demon->difficulty = !json["Rating"].is_null() ? DIFFICULTY_INDICES[(int)round(json["Rating"].as_double())] : 0;
-                demon->enjoyment = !json["Enjoyment"].is_null() ? round(json["Enjoyment"].as_double() * 100) / 100 : -1.0;
-
-                auto& cacheArray = GDDL_CACHE["list"].as_array();
-                auto cacheDemon = std::find_if(cacheArray.begin(), cacheArray.end(), [demon](matjson::Value const& d) {
-                    return d["ID"].as_int() == demon->id;
-                });
-                if (cacheDemon != cacheArray.end()) {
-                    cacheDemon->operator[]("Tier") = !json["Rating"].is_null() ? round(json["Rating"].as_double() * 100) / 100 : matjson::Value(nullptr);
-                    cacheDemon->operator[]("Enjoyment") = !json["Enjoyment"].is_null() ? round(json["Enjoyment"].as_double() * 100) / 100 : matjson::Value(nullptr);
-                    GDDL_CACHE_CHANGED = true;
-                    FLAlertLayer::create("Refresh Success", "Successfully refreshed difficulty.", "OK")->show();
-                    log::info("Updated demon with ID {}", demon->id);
-                } else {
+            if (!res->ok()) {
+                if (showPopup) queueInMainThread([] {
                     FLAlertLayer::create("Refresh Failed", "Failed to refresh difficulty. Please try again later.", "OK")->show();
-                    log::error("Failed to update demon with ID {}", demon->id);
-                }
-
-                if (callback) callback(*demon);
+                });
+                log::error("Failed to update demon with ID {}", demon->id);
+                return;
             }
+
+            auto json = res->json().unwrapOr(matjson::Value());
+            if (json["Rating"].isNull()) {
+                if (showPopup) queueInMainThread([] {
+                    FLAlertLayer::create("Refresh Failed", "Failed to refresh difficulty. Please try again later.", "OK")->show();
+                });
+                log::error("Failed to update demon with ID {}", demon->id);
+                return;
+            }
+
+            demon->difficulty = DIFFICULTY_INDICES[(int)round(json["Rating"].asDouble().unwrapOr(0.0))];
+            demon->enjoyment = !json["Enjoyment"].isNull() ? round(json["Enjoyment"].asDouble().unwrapOr(-999.0) * 100) / 100 : -999.0;
+
+            if (!GDDL_CACHE["list"].isArray()) {
+                if (showPopup) queueInMainThread([] {
+                    FLAlertLayer::create("Refresh Failed", "Failed to refresh difficulty. Please try again later.", "OK")->show();
+                });
+                log::error("Failed to update demon with ID {}", demon->id);
+                return;
+            }
+
+            auto cacheArray = GDDL_CACHE["list"].isArray() ? GDDL_CACHE["list"].asArray().unwrap() : std::vector<matjson::Value>();
+            auto it = std::find_if(cacheArray.begin(), cacheArray.end(), [demon](matjson::Value const& d) {
+                return d["ID"].asInt().unwrapOr(0) == demon->id;
+            });
+            auto tier = round(json["Rating"].asDouble().unwrapOr(0.0) * 100) / 100;
+            auto enjoyment = !json["Enjoyment"].isNull() ? round(json["Enjoyment"].asDouble().unwrapOr(-999.0) * 100) / 100 : matjson::Value(nullptr);
+            if (it != cacheArray.end()) {
+                auto cacheDemon = *it;
+                cacheDemon["Tier"] = tier;
+                cacheDemon["Enjoyment"] = enjoyment;
+                GDDL_CACHE_CHANGED = true;
+            } else {
+                auto cacheDemon = matjson::makeObject({
+                    { "ID", demon->id },
+                    { "Tier", tier },
+                    { "Enjoyment", enjoyment }
+                });
+
+                auto lower = std::find_if(cacheArray.rbegin(), cacheArray.rend(), [demon](matjson::Value const& d) {
+                    return d["ID"].asInt().unwrapOr(0) < demon->id;
+                });
+                auto upper = std::find_if(cacheArray.begin(), cacheArray.end(), [demon](matjson::Value const& d) {
+                    return d["ID"].asInt().unwrapOr(0) > demon->id;
+                });
+                if (lower != cacheArray.rend()) cacheArray.insert(lower.base() + 1, cacheDemon);
+                else if (upper != cacheArray.end()) cacheArray.insert(upper, cacheDemon);
+                else cacheArray.push_back(cacheDemon);
+
+                GDDL_CACHE_CHANGED = true;
+            }
+
+            if (showPopup) queueInMainThread([] {
+                FLAlertLayer::create("Refresh Success", "Successfully refreshed difficulty.", "OK")->show();
+            });
+            log::info("Updated demon with ID {}", demon->id);
+
+            if (callback) callback(*demon);
         }
     });
 
