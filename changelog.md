@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.3.0 (2024-11-15)
+- Ported to Geode v4.0.0-beta.1
+
 ## v1.3.0-beta.1 (2024-11-13)
 - Added auto-refreshing for the demon difficulties in the level info page
 - Ported to Geometry Dash v2.207

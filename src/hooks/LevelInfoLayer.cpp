@@ -27,11 +27,14 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
         auto demon = DemonsInBetween::demonForLevel(level, false);
         if (demon.id == 0 || demon.difficulty == 0) return true;
 
-        auto leftSideMenu = getChildByID("left-side-menu");
-        leftSideMenu->addChild(CCMenuItemSpriteExtra::create(
+        auto demonInfoButton = CCMenuItemSpriteExtra::create(
             CircleButtonSprite::createWithSpriteFrameName(fmt::format("DIB_{:02d}_001.png"_spr, demon.difficulty).c_str()),
             this, menu_selector(DIBLevelInfoLayer::onDemonInfo)
-        ));
+        );
+        demonInfoButton->setID("demon-info-button"_spr);
+
+        auto leftSideMenu = getChildByID("left-side-menu");
+        leftSideMenu->addChild(demonInfoButton);
         leftSideMenu->updateLayout();
 
         createDemonSprite(demon);
