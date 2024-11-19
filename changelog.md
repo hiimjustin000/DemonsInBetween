@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.3.1 (2024-11-18)
+- Fixed an incompatibility with the mod "Overcharged Main Levels" by Firee
+
 ## v1.3.0 (2024-11-15)
 - Ported to Geode v4.0.0-beta.1
 

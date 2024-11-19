@@ -8,7 +8,7 @@ struct LadderDemon {
 };
 
 class DemonsInBetween {
-private:
+public:
     inline static std::vector<cocos2d::CCPoint> LONG_OFFSETS = {
         { 0.0f, -5.0f }, { 0.125f, -5.0f }, { 0.0f, -5.0f }, { 0.0f, -5.125f }, { 0.25f, -5.0f },
         { 0.125f, -4.75f }, { 0.0f, -5.0f }, { 0.0f, -4.125f }, { -0.125f, -4.125f }, { 0.0f, -4.0f },
@@ -25,7 +25,7 @@ private:
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11, 12, 13, 14, 14, 15, 15,
         16, 17, 18, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20
     };
-public:
+
     inline static std::vector<LadderDemon> GDDL = {};
     inline static std::vector<LadderDemon> GDDL_MAIN = {};
     inline static matjson::Value GDDL_CACHE = {};
