@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.4.2 (2024-11-22)
+- Fixed level browsers not working
+
 ## v1.4.1 (2024-11-22)
 - Fixed the demon info button in the level info page not working
 

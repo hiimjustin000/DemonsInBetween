@@ -20,6 +20,8 @@ class $modify(DIBLevelBrowserLayer, LevelBrowserLayer) {
     bool init(GJSearchObject* searchObject) {
         if (!LevelBrowserLayer::init(searchObject)) return false;
 
+        if (!DemonsInBetween::SEARCHING) return true;
+
         if (auto pageMenu = getChildByID("page-menu")) {
             if (auto randomButton = static_cast<CCMenuItemSpriteExtra*>(pageMenu->getChildByID("cvolton.betterinfo/random-button")))
                 randomButton->m_pfnSelector = menu_selector(DIBLevelBrowserLayer::onBetterInfoRandom);
@@ -64,6 +66,8 @@ class $modify(DIBLevelBrowserLayer, LevelBrowserLayer) {
     }
 
     void updatePageButtons() {
+        if (!DemonsInBetween::SEARCHING) return;
+
         auto f = m_fields.self();
 
         m_leftArrow->setVisible(f->m_currentPage > 0);
