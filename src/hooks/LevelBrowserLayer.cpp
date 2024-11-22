@@ -139,7 +139,7 @@ class $modify(DIBLevelBrowserLayer, LevelBrowserLayer) {
 
         if (!DemonsInBetween::SEARCHING) return;
 
-        switchToPage();
+        switchToPage(true);
     }
 
     void onGoToPage(CCObject* sender) {
