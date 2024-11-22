@@ -94,7 +94,9 @@ bool DIBSearchPopup::setup() {
         table->addButton(CCMenuItemExt::createSpriteExtraWithFrameName(fmt::format("DIB_{:02d}_btn2_001.png"_spr, i).c_str(), 1.0f, [this, i](auto) {
             DemonsInBetween::DIFFICULTY = i;
             DemonsInBetween::SEARCHING = true;
-            CCDirector::get()->pushScene(CCTransitionFade::create(0.5f, LevelBrowserLayer::scene(DemonsInBetween::searchObjectForPage(0))));
+            DemonsInBetween::searchObjectForPage(std::move(m_listener), 0, false, [this](GJSearchObject* obj) {
+                CCDirector::get()->pushScene(CCTransitionFade::create(0.5f, LevelBrowserLayer::scene(obj)));
+            });
         }));
     }
 

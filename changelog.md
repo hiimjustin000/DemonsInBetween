@@ -1,4 +1,9 @@
 # Demons In Between Changelog
+## v1.4.0 (2024-11-22)
+- Added detailed demon breakdown to the demon info popup
+- Switched to dynamic loading for the demon difficulties
+- Fixed BetterInfo buttons in the quick search menu
+
 ## v1.3.1 (2024-11-18)
 - Fixed an incompatibility with the mod "Overcharged Main Levels" by Firee
 

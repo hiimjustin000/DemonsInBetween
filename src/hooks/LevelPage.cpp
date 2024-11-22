@@ -16,9 +16,10 @@ class $modify(DIBLevelPage, LevelPage) {
             m_difficultySprite->setVisible(true);
         }
 
-        if (level->m_levelID.value() < 1 || GameStatsManager::get()->getStat("8") < m_level->m_requiredCoins) return;
+        auto levelID = level->m_levelID.value();
+        if (levelID < 1 || GameStatsManager::get()->getStat("8") < m_level->m_requiredCoins) return;
 
-        auto demon = DemonsInBetween::demonForLevel(level, true);
+        auto demon = DemonsInBetween::demonForLevel(levelID, true);
         if (demon.id == 0 || demon.difficulty == 0) return;
 
         auto overcharged = Loader::get()->getLoadedMod("firee.overchargedlevels");

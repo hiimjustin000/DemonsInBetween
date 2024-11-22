@@ -6,7 +6,6 @@ using namespace geode::prelude;
 class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
     struct Fields {
         EventListener<web::WebTask> m_listener;
-        bool m_disabled;
     };
 
     static void onModify(auto& self) {
@@ -16,17 +15,72 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
     bool init(GJGameLevel* level, bool challenge) {
         if (!LevelInfoLayer::init(level, challenge)) return false;
 
-        auto f = m_fields.self();
+        if (level->m_stars.value() < 10) return true;
 
-        if (getChildByID("grd-difficulty") || !Mod::get()->getSettingValue<bool>("enable-difficulties")) f->m_disabled = true;
+        auto levelID = level->m_levelID.value();
+        auto demon = DemonsInBetween::demonForLevel(levelID, false);
+        if (demon.id != 0 && demon.difficulty != 0) {
+            createUI(demon);
+            return true;
+        }
 
-        auto gddpDifficulty = getChildByID("gddp-difficulty");
-        if (gddpDifficulty && !Mod::get()->getSettingValue<bool>("gddp-integration-override")) f->m_disabled = true;
-        else if (gddpDifficulty) gddpDifficulty->setVisible(false);
+        DemonsInBetween::loadDemonForLevel(std::move(m_fields->m_listener), levelID, false, [this](LadderDemon& demon) { createUI(demon); });
 
-        auto demon = DemonsInBetween::demonForLevel(level, false);
-        if (demon.id == 0 || demon.difficulty == 0) return true;
+        return true;
+    }
 
+    void onDemonInfo(CCObject* sender) {
+        auto demon = DemonsInBetween::demonForLevel(m_level->m_levelID.value(), false);
+        if (demon.id == 0 || demon.difficulty == 0) return;
+
+        auto difficulty = "Unknown Demon";
+        switch (demon.difficulty) {
+            case 1: difficulty = "Free Demon"; break;
+            case 2: difficulty = "Peaceful Demon"; break;
+            case 3: difficulty = "Simple Demon"; break;
+            case 4: difficulty = "Easy Demon"; break;
+            case 5: difficulty = "Casual Demon"; break;
+            case 6: difficulty = "Mild Demon"; break;
+            case 7: difficulty = "Medium Demon"; break;
+            case 8: difficulty = "Normal Demon"; break;
+            case 9: difficulty = "Moderate Demon"; break;
+            case 10: difficulty = "Tricky Demon"; break;
+            case 11: difficulty = "Hard Demon"; break;
+            case 12: difficulty = "Harder Demon"; break;
+            case 13: difficulty = "Tough Demon"; break;
+            case 14: difficulty = "Wild Demon"; break;
+            case 15: difficulty = "Insane Demon"; break;
+            case 16: difficulty = "Cruel Demon"; break;
+            case 17: difficulty = "Crazy Demon"; break;
+            case 18: difficulty = "Bizarre Demon"; break;
+            case 19: difficulty = "Brutal Demon"; break;
+            case 20: difficulty = "Extreme Demon"; break;
+        }
+
+        auto originalDifficulty = "Unknown Demon";
+        switch (m_level->m_demonDifficulty) {
+            case 0: originalDifficulty = "Hard Demon"; break;
+            case 3: originalDifficulty = "Easy Demon"; break;
+            case 4: originalDifficulty = "Medium Demon"; break;
+            case 5: originalDifficulty = "Insane Demon"; break;
+            case 6: originalDifficulty = "Extreme Demon"; break;
+        }
+
+        FLAlertLayer::create("Demon Info", fmt::format(
+            "<cy>{}</c>\n"
+            "<cg>Tier</c>: {}\n"
+            "<cl>Enjoyment</c>: {}\n"
+            "<cp>Difficulty</c>: {}\n"
+            "<co>Original Difficulty</c>: {}",
+            std::string(m_level->m_levelName),
+            demon.tier,
+            demon.enjoyment >= 0.0 ? fmt::format("{}", demon.enjoyment) : "N/A",
+            difficulty,
+            originalDifficulty
+        ), "OK");
+    }
+
+    void createUI(LadderDemon const& demon) {
         auto demonInfoButton = CCMenuItemSpriteExtra::create(
             CircleButtonSprite::createWithSpriteFrameName(fmt::format("DIB_{:02d}_001.png"_spr, demon.difficulty).c_str()),
             this, menu_selector(DIBLevelInfoLayer::onDemonInfo)
@@ -37,32 +91,12 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
         leftSideMenu->addChild(demonInfoButton);
         leftSideMenu->updateLayout();
 
-        createDemonSprite(demon);
+        if (getChildByID("grd-difficulty") || !Mod::get()->getSettingValue<bool>("enable-difficulties")) return;
 
-        if (DemonsInBetween::REFRESHED_DEMONS.find(demon.id) != DemonsInBetween::REFRESHED_DEMONS.end()) return true;
+        auto gddpDifficulty = getChildByID("gddp-difficulty");
+        if (gddpDifficulty && !Mod::get()->getSettingValue<bool>("gddp-integration-override")) return;
+        else if (gddpDifficulty) gddpDifficulty->setVisible(false);
 
-        DemonsInBetween::refreshDemonForLevel(std::move(f->m_listener), m_level, [this](LadderDemon const& demon) {
-            createDemonSprite(demon);
-        }, false);
-
-        return true;
-    }
-
-    void onDemonInfo(CCObject* sender) {
-        auto demon = DemonsInBetween::demonForLevel(m_level, false);
-        if (demon.id == 0 || demon.difficulty == 0) return;
-
-        createQuickPopup("Demon Info", DemonsInBetween::infoForLevel(m_level, demon), "OK", "Refresh", [this](auto, bool btn2) {
-            if (btn2) DemonsInBetween::refreshDemonForLevel(std::move(m_fields->m_listener), m_level, [this](LadderDemon const& demon) {
-                createDemonSprite(demon);
-            }, true);
-        });
-    }
-
-    void createDemonSprite(LadderDemon const& demon) {
-        if (m_fields->m_disabled) return;
-
-        if (auto existingDifficulty = getChildByID("between-difficulty-sprite"_spr)) existingDifficulty->removeFromParent();
         addChild(DemonsInBetween::spriteForDifficulty(m_difficultySprite, demon.difficulty, GJDifficultyName::Long, DemonsInBetween::stateForLevel(m_level)), 3);
         m_difficultySprite->setOpacity(0);
     }

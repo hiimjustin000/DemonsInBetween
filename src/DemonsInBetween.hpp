@@ -25,28 +25,24 @@ public:
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11, 12, 13, 14, 14, 15, 15,
         16, 17, 18, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20
     };
+    inline static std::vector<std::pair<int, int>> TIER_BOUNDS = {
+        { 0, 0 }, { 1, 1 }, { 2, 2 }, { 3, 3 }, { 4, 4 }, { 5, 5 }, { 6, 6 }, { 7, 7 }, { 8, 8 }, { 9, 9 }, { 10, 10 },
+        { 11, 12 }, { 13, 13 }, { 14, 14 }, { 15, 16 }, { 17, 18 }, { 19, 19 }, { 20, 20 }, { 21, 21 }, { 22, 22 }, { 23, 35 }
+    };
 
     inline static std::vector<LadderDemon> GDDL = {};
     inline static std::vector<LadderDemon> GDDL_MAIN = {};
-    inline static matjson::Value GDDL_CACHE = {};
-    inline static std::set<int> REFRESHED_DEMONS = {};
-    inline static bool GDDL_CACHE_CHANGED = false;
     inline static bool TRIED_LOADING = false;
     inline static int MAX_PAGE = 0;
+    inline static int SEARCH_SIZE = 0;
+    inline static std::unordered_map<int, int> SEARCH_SIZES = {};
     inline static int DIFFICULTY = 0;
     inline static bool SEARCHING = false;
-    inline static std::vector<std::string> SEARCH_RESULTS = {};
-    inline static std::string CACHE_PATH = "";
 
-    static void tryLoadCache();
-    static void loadGDDL();
-    static void initGDDL(std::vector<matjson::Value> const&, bool saveCache = false);
-    static void saveGDDL();
-    static std::vector<matjson::Value> parseGDDL(std::string const&);
-    static LadderDemon demonForLevel(GJGameLevel*, bool);
-    static void refreshDemonForLevel(geode::EventListener<geode::utils::web::WebTask>&&, GJGameLevel*, std::function<void(LadderDemon const&)> const&, bool);
-    static std::string infoForLevel(GJGameLevel*, LadderDemon const&);
+    static LadderDemon& demonForLevel(int, bool);
     static cocos2d::CCSprite* spriteForDifficulty(GJDifficultySprite*, int, GJDifficultyName, GJFeatureState);
+    static int difficultyForDemonDifficulty(int);
     static GJFeatureState stateForLevel(GJGameLevel*);
-    static GJSearchObject* searchObjectForPage(int);
+    static void loadDemonForLevel(geode::EventListener<geode::utils::web::WebTask>&&, int, bool, std::function<void(LadderDemon&)> const&);
+    static void searchObjectForPage(geode::EventListener<geode::utils::web::WebTask>&&, int, bool, std::function<void(GJSearchObject*)> const&);
 };

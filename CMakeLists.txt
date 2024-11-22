@@ -4,16 +4,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-project(DemonsInBetween VERSION 1.3.1)
+project(DemonsInBetween VERSION 1.4.0)
 
 add_library(${PROJECT_NAME} SHARED
+    src/classes/DIBInfoPopup.cpp
     src/classes/DIBSearchPopup.cpp
     src/hooks/LevelBrowserLayer.cpp
     src/hooks/LevelCell.cpp
     src/hooks/LevelInfoLayer.cpp
     src/hooks/LevelPage.cpp
     src/hooks/LevelSearchLayer.cpp
-    src/hooks/MenuLayer.cpp
+    src/hooks/LevelSelectLayer.cpp
+    src/hooks/ProfilePage.cpp
     src/DemonsInBetween.cpp
 )
 

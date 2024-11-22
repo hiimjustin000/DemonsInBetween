@@ -1,3 +1,5 @@
+#include <Geode/utils/web.hpp>
+
 class TableNode : public cocos2d::CCNode {
 protected:
     cocos2d::CCArray* m_menus;
@@ -22,6 +24,8 @@ public:
 
 class DIBSearchPopup : public geode::Popup<> {
 protected:
+    geode::EventListener<geode::utils::web::WebTask> m_listener;
+
     bool setup() override;
 public:
     static DIBSearchPopup* create();
