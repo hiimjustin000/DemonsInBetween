@@ -77,7 +77,7 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
             demon.enjoyment >= 0.0 ? fmt::format("{}", demon.enjoyment) : "N/A",
             difficulty,
             originalDifficulty
-        ), "OK");
+        ), "OK")->show();
     }
 
     void createUI(LadderDemon const& demon) {

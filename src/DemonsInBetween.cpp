@@ -48,7 +48,7 @@ void DemonsInBetween::loadDemonForLevel(EventListener<web::WebTask>&& listenerRe
             auto json = res->json().unwrapOr(matjson::Value());
             if (json["Rating"].isNull()) return;
 
-            auto rating = json["Rating"].asDouble().unwrapOr(0.0);
+            auto rating = round(json["Rating"].asDouble().unwrapOr(0.0) * 100) / 100;
             auto difficulty = DemonsInBetween::DIFFICULTY_INDICES[(int)round(rating)];
             auto enjoyment = !json["Enjoyment"].isNull() ? round(json["Enjoyment"].asDouble().unwrapOr(-999.0) * 100) / 100 : -999.0;
 

@@ -1,6 +1,9 @@
 # Demons In Between Changelog
+## v1.4.1 (2024-11-22)
+- Fixed the demon info button in the level info page not working
+
 ## v1.4.0 (2024-11-22)
-- Added detailed demon breakdown to the demon info popup
+- Added detailed demon breakdown to the main menu profile page
 - Switched to dynamic loading for the demon difficulties
 - Fixed BetterInfo buttons in the quick search menu
 
