@@ -40,6 +40,7 @@ public:
     inline static bool SEARCHING = false;
 
     static LadderDemon& demonForLevel(int, bool);
+    static cocos2d::CCSpriteFrame* spriteFrameForDifficulty(int, GJDifficultyName, GJFeatureState);
     static cocos2d::CCSprite* spriteForDifficulty(GJDifficultySprite*, int, GJDifficultyName, GJFeatureState);
     static int difficultyForDemonDifficulty(int);
     static GJFeatureState stateForLevel(GJGameLevel*);

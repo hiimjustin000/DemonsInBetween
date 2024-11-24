@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.4.3 (2024-11-24)
+- Altered dynamic loading as to not break compatibility with other mods
+
 ## v1.4.2 (2024-11-22)
 - Fixed level browsers not working
 

@@ -11,10 +11,17 @@ LadderDemon& DemonsInBetween::demonForLevel(int levelID, bool main) {
     return demon == gddl.end() ? empty : *demon;
 }
 
+CCSpriteFrame* DemonsInBetween::spriteFrameForDifficulty(int difficulty, GJDifficultyName name, GJFeatureState state) {
+    return CCSpriteFrameCache::get()->spriteFrameByName(fmt::format(
+        "DIB_{:02d}{}_btn{}_001.png"_spr,
+        difficulty,
+        state == GJFeatureState::Legendary ? "_4" : state == GJFeatureState::Mythic ? "_5" : "",
+        name == GJDifficultyName::Long ? "2" : ""
+    ).c_str());
+}
+
 CCSprite* DemonsInBetween::spriteForDifficulty(GJDifficultySprite* difficultySprite, int difficulty, GJDifficultyName name, GJFeatureState state) {
-    auto glow = state == GJFeatureState::Legendary ? "_4" : state == GJFeatureState::Mythic ? "_5" : "";
-    auto sprite = CCSprite::createWithSpriteFrameName((name == GJDifficultyName::Long ?
-        fmt::format("DIB_{:02d}{}_btn2_001.png"_spr, difficulty, glow) : fmt::format("DIB_{:02d}{}_btn_001.png"_spr, difficulty, glow)).c_str());
+    auto sprite = CCSprite::createWithSpriteFrame(spriteFrameForDifficulty(difficulty, name, state));
     sprite->setPosition(difficultySprite->getPosition() + (name == GJDifficultyName::Long ?
         LONG_OFFSETS[(size_t)difficulty - 1] : SHORT_OFFSETS[(size_t)difficulty - 1]));
     sprite->setID("between-difficulty-sprite"_spr);
