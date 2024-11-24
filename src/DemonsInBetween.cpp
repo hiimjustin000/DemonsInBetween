@@ -47,9 +47,13 @@ GJFeatureState DemonsInBetween::stateForLevel(GJGameLevel* level) {
 }
 
 void DemonsInBetween::loadDemonForLevel(EventListener<web::WebTask>&& listenerRef, int levelID, bool main, std::function<void(LadderDemon&)> const& callback) {
+    if (LEVELS_LOADED.contains(levelID)) return;
+
     auto&& listener = std::move(listenerRef);
     listener.bind([callback, levelID, main](web::WebTask::Event* e) {
         if (auto res = e->getValue()) {
+            LEVELS_LOADED.insert(levelID);
+
             if (!res->ok()) return;
 
             auto json = res->json().unwrapOr(matjson::Value());

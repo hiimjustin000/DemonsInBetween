@@ -1,4 +1,7 @@
 # Demons In Between Changelog
+## v1.4.4 (2024-11-24)
+- Fixed constant reloading of the demon difficulties
+
 ## v1.4.3 (2024-11-24)
 - Altered dynamic loading as to not break compatibility with other mods
 

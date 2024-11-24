@@ -32,7 +32,7 @@ public:
 
     inline static std::vector<LadderDemon> GDDL = {};
     inline static std::vector<LadderDemon> GDDL_MAIN = {};
-    inline static bool TRIED_LOADING = false;
+    inline static std::set<int> LEVELS_LOADED = {};
     inline static int MAX_PAGE = 0;
     inline static int SEARCH_SIZE = 0;
     inline static std::unordered_map<int, int> SEARCH_SIZES = {};
