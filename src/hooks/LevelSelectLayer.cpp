@@ -17,15 +17,15 @@ class $modify(DIBLevelSelectLayer, LevelSelectLayer) {
 
         auto ladderDemon1 = DemonsInBetween::demonForLevel(14, true);
         if (ladderDemon1.id == 0 || ladderDemon1.difficulty == 0)
-            DemonsInBetween::loadDemonForLevel(std::move(f->m_listener1), 1, true, [this](LadderDemon& demon) { demon.id = 14; });
+            DemonsInBetween::loadDemonForLevel(std::move(f->m_listener1), 1, true, [this](LadderDemon& demon) { demon.id = 14; }, [this] {});
 
         auto ladderDemon2 = DemonsInBetween::demonForLevel(18, true);
         if (ladderDemon2.id == 0 || ladderDemon2.difficulty == 0)
-            DemonsInBetween::loadDemonForLevel(std::move(f->m_listener2), 2, true, [this](LadderDemon& demon) { demon.id = 18; });
+            DemonsInBetween::loadDemonForLevel(std::move(f->m_listener2), 2, true, [this](LadderDemon& demon) { demon.id = 18; }, [this] {});
 
         auto ladderDemon3 = DemonsInBetween::demonForLevel(20, true);
         if (ladderDemon3.id == 0 || ladderDemon3.difficulty == 0)
-            DemonsInBetween::loadDemonForLevel(std::move(f->m_listener3), 3, true, [this](LadderDemon& demon) { demon.id = 20; });
+            DemonsInBetween::loadDemonForLevel(std::move(f->m_listener3), 3, true, [this](LadderDemon& demon) { demon.id = 20; }, [this] {});
 
         return true;
     }

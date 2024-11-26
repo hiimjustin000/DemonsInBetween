@@ -25,6 +25,7 @@ public:
 class DIBSearchPopup : public geode::Popup<> {
 protected:
     geode::EventListener<geode::utils::web::WebTask> m_listener;
+    bool m_isBusy;
 
     bool setup() override;
 public:

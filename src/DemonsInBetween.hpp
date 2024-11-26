@@ -44,6 +44,12 @@ public:
     static cocos2d::CCSprite* spriteForDifficulty(GJDifficultySprite*, int, GJDifficultyName, GJFeatureState);
     static int difficultyForDemonDifficulty(int);
     static GJFeatureState stateForLevel(GJGameLevel*);
-    static void loadDemonForLevel(geode::EventListener<geode::utils::web::WebTask>&&, int, bool, std::function<void(LadderDemon&)> const&);
-    static void searchObjectForPage(geode::EventListener<geode::utils::web::WebTask>&&, int, bool, std::function<void(GJSearchObject*)> const&);
+    static void loadDemonForLevel(
+        geode::EventListener<geode::utils::web::WebTask>&&, int, bool,
+        std::function<void(LadderDemon&)> const&, std::function<void()> const&
+    );
+    static void searchObjectForPage(
+        geode::EventListener<geode::utils::web::WebTask>&&, int, bool,
+        std::function<void(GJSearchObject*)> const&, std::function<void()> const&
+    );
 };

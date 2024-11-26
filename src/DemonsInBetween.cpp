@@ -46,25 +46,29 @@ GJFeatureState DemonsInBetween::stateForLevel(GJGameLevel* level) {
     return state;
 }
 
-void DemonsInBetween::loadDemonForLevel(EventListener<web::WebTask>&& listenerRef, int levelID, bool main, std::function<void(LadderDemon&)> const& callback) {
+void DemonsInBetween::loadDemonForLevel(
+    EventListener<web::WebTask>&& listenerRef, int levelID, bool main,
+    std::function<void(LadderDemon&)> const& callback, std::function<void()> const& preCallback
+) {
     if (LEVELS_LOADED.contains(levelID)) return;
 
     auto&& listener = std::move(listenerRef);
-    listener.bind([callback, levelID, main](web::WebTask::Event* e) {
+    listener.bind([callback, levelID, main, preCallback](web::WebTask::Event* e) {
         if (auto res = e->getValue()) {
             LEVELS_LOADED.insert(levelID);
 
             if (!res->ok()) return;
 
             auto json = res->json().unwrapOr(matjson::Value());
-            if (json["Rating"].isNull()) return;
+            if (!json.contains("Rating") || json["Rating"].isNull()) return;
 
             auto rating = round(json["Rating"].asDouble().unwrapOr(0.0) * 100) / 100;
             auto difficulty = DemonsInBetween::DIFFICULTY_INDICES[(int)round(rating)];
-            auto enjoyment = !json["Enjoyment"].isNull() ? round(json["Enjoyment"].asDouble().unwrapOr(-999.0) * 100) / 100 : -999.0;
+            auto enjoyment = !json.contains("Enjoyment") || json["Enjoyment"].isNull() ? round(json["Enjoyment"].asDouble().unwrapOr(-999.0) * 100) / 100 : -999.0;
 
             auto& gddl = main ? GDDL_MAIN : GDDL;
             gddl.push_back({ levelID, rating, enjoyment, difficulty });
+            preCallback();
             queueInMainThread([callback, levelID, main] { callback(demonForLevel(levelID, main)); });
         }
     });
@@ -72,7 +76,10 @@ void DemonsInBetween::loadDemonForLevel(EventListener<web::WebTask>&& listenerRe
     listener.setFilter(web::WebRequest().get(fmt::format("https://gdladder.com/api/level/{}", levelID)));
 }
 
-void DemonsInBetween::searchObjectForPage(EventListener<web::WebTask>&& listenerRef, int page, bool refresh, std::function<void(GJSearchObject*)> const& callback) {
+void DemonsInBetween::searchObjectForPage(
+    EventListener<web::WebTask>&& listenerRef, int page, bool refresh,
+    std::function<void(GJSearchObject*)> const& callback, std::function<void()> const& preCallback
+) {
     auto glm = GameLevelManager::get();
     auto searchCache = static_cast<CCDictionary*>(glm->getUserObject("search-cache"_spr));
     if (!searchCache) {
@@ -84,6 +91,7 @@ void DemonsInBetween::searchObjectForPage(EventListener<web::WebTask>&& listener
     if (!refresh && searchCache->objectForKey(searchKey)) {
         SEARCH_SIZE = SEARCH_SIZES[DIFFICULTY];
         MAX_PAGE = (SEARCH_SIZE - 1) / 10;
+        preCallback();
         callback(static_cast<GJSearchObject*>(searchCache->objectForKey(searchKey)));
         return;
     }
@@ -91,7 +99,7 @@ void DemonsInBetween::searchObjectForPage(EventListener<web::WebTask>&& listener
     auto tierBound = TIER_BOUNDS[DIFFICULTY];
 
     auto&& listener = std::move(listenerRef);
-    listener.bind([callback, page](web::WebTask::Event* e) {
+    listener.bind([callback, page, preCallback](web::WebTask::Event* e) {
         if (auto res = e->getValue()) {
             if (!res->ok()) return;
 
@@ -107,6 +115,7 @@ void DemonsInBetween::searchObjectForPage(EventListener<web::WebTask>&& listener
                 }
             }
 
+            preCallback();
             queueInMainThread([callback, levels, page] {
                 auto searchObject = GJSearchObject::create(SearchType::MapPackOnClick, string::join(levels, ","));
                 if (auto searchCache = static_cast<CCDictionary*>(GameLevelManager::get()->getUserObject("search-cache"_spr)))

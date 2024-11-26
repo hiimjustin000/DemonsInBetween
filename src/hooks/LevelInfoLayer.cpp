@@ -40,7 +40,8 @@ class $modify(DIBLevelInfoLayer, LevelInfoLayer) {
 
         DemonsInBetween::loadDemonForLevel(std::move(m_fields->m_listener), levelID, false, [this, createDemon](LadderDemon& demon) {
             createUI(demon, createDemon);
-        });
+            release();
+        }, [this] { retain(); });
 
         return true;
     }

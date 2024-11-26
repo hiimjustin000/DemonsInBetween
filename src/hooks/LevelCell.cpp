@@ -43,6 +43,13 @@ class $modify(DIBLevelCell, LevelCell) {
 
         DemonsInBetween::loadDemonForLevel(std::move(m_fields->m_listener), levelID, false, [this, difficultyContainer, difficultySprite](LadderDemon& demon) {
             createUI(demon, difficultyContainer, difficultySprite);
+            release();
+            difficultyContainer->release();
+            difficultySprite->release();
+        }, [this, difficultyContainer, difficultySprite] {
+            retain();
+            difficultyContainer->retain();
+            difficultySprite->retain();
         });
     }
 

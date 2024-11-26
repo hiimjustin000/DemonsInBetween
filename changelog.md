@@ -1,4 +1,8 @@
 # Demons In Between Changelog
+## v1.4.5 (2024-11-24)
+- Fixed some crashes related to exiting menus too quickly
+- Fixed difficulties disappearing on failed requests
+
 ## v1.4.4 (2024-11-24)
 - Fixed constant reloading of the demon difficulties
 

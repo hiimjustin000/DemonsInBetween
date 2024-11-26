@@ -67,7 +67,11 @@ bool DIBInfoPopup::setup() {
                 CACHED_DEMONS.push_back(demon);
             }
 
-            queueInMainThread([this] { setupDemonInfo(); });
+            retain();
+            queueInMainThread([this] {
+                setupDemonInfo();
+                release();
+            });
         }
     });
 

@@ -62,7 +62,8 @@ class $modify(DIBLevelBrowserLayer, LevelBrowserLayer) {
         DemonsInBetween::searchObjectForPage(std::move(f->m_listener), f->m_currentPage, refresh, [this](GJSearchObject* obj) {
             m_fields->m_loadingPage = false;
             loadPage(obj);
-        });
+            release();
+        }, [this] { retain(); });
     }
 
     void updatePageButtons() {
