@@ -1,4 +1,8 @@
 # Demons In Between Changelog
+## v1.4.6 (2025-01-07)
+- Added back demon refresh button in the level info page
+- Fixed enjoyment rating not showing up in the demon info popup
+
 ## v1.4.5 (2024-11-24)
 - Fixed some crashes related to exiting menus too quickly
 - Fixed difficulties disappearing on failed requests

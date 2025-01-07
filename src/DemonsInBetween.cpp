@@ -64,7 +64,7 @@ void DemonsInBetween::loadDemonForLevel(
 
             auto rating = round(json["Rating"].asDouble().unwrapOr(0.0) * 100) / 100;
             auto difficulty = DemonsInBetween::DIFFICULTY_INDICES[(int)round(rating)];
-            auto enjoyment = !json.contains("Enjoyment") || json["Enjoyment"].isNull() ? round(json["Enjoyment"].asDouble().unwrapOr(-999.0) * 100) / 100 : -999.0;
+            auto enjoyment = !json.contains("Enjoyment") || json["Enjoyment"].isNull() ? -999.0 : round(json["Enjoyment"].asDouble().unwrapOr(-999.0) * 100) / 100;
 
             auto& gddl = main ? GDDL_MAIN : GDDL;
             gddl.push_back({ levelID, rating, enjoyment, difficulty });
